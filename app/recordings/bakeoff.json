@@ -1,0 +1,442 @@
+{
+ "recorded_at": "15.10.2026 22:08",
+ "events": [
+  {
+   "type": "bake_start",
+   "models": [
+    {
+     "model": "gpt-5.5",
+     "tier": "Frontier",
+     "price_in": 5.0,
+     "price_out": 30.0
+    },
+    {
+     "model": "gpt-6-luna",
+     "tier": "Newest, low cost",
+     "price_in": 0.1,
+     "price_out": 0.5
+    },
+    {
+     "model": "gpt-5.6-luna",
+     "tier": "Previous gen, low cost",
+     "price_in": 0.2,
+     "price_out": 1.2
+    }
+   ],
+   "tickers": [
+    {
+     "ticker": "VACN",
+     "company": "VAT Group"
+    },
+    {
+     "ticker": "PGHN",
+     "company": "Partners Group Holding AG"
+    },
+    {
+     "ticker": "NOVN",
+     "company": "Novartis AG"
+    },
+    {
+     "ticker": "CLN",
+     "company": "Clariant AG"
+    },
+    {
+     "ticker": "ALC",
+     "company": "Alcon Inc."
+    }
+   ],
+   "quality_bar": 4.7
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-5.6-luna",
+    "ticker": "VACN",
+    "latency": 5.91,
+    "tokens_in": 878,
+    "tokens_out": 909,
+    "cost": 0.0012664,
+    "quality": 5,
+    "scores": {
+     "groundedness": 5,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 5
+    },
+    "checks_passed": 5,
+    "checks_total": 6,
+    "comment": "The briefing is well grounded, clearly separates facts from hedged hypotheses, discloses gaps, and gives a concrete next step.",
+    "headline": "VAT Group shows positive momentum, with Q3 sales and FY26 outlook headlines on 15 October 2026."
+   },
+   "t": 10.6
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-6-luna",
+    "ticker": "VACN",
+    "latency": 7.24,
+    "tokens_in": 878,
+    "tokens_out": 867,
+    "cost": 0.0005212999999999999,
+    "quality": 4.75,
+    "scores": {
+     "groundedness": 5,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 4
+    },
+    "checks_passed": 5,
+    "checks_total": 6,
+    "comment": "The briefing is well supported, clearly hedged, compliant, and provides practical validation steps despite limited account-specific actions.",
+    "headline": "VAT Group: positive workbook momentum; October headlines and closing price update the picture"
+   },
+   "t": 13.0
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-5.5",
+    "ticker": "VACN",
+    "latency": 13.53,
+    "tokens_in": 878,
+    "tokens_out": 1137,
+    "cost": 0.0385,
+    "quality": 4.75,
+    "scores": {
+     "groundedness": 4,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 5
+    },
+    "checks_passed": 5,
+    "checks_total": 6,
+    "comment": "Strong, well-hedged briefing with clear data gaps; minor sourcing issue where the Yahoo price fact is bundled under SIG-115 rather than SIG-116.",
+    "headline": "VAT Group shows strongest Industrials momentum in workbook snapshot; 15 Oct public signals point to Q3 sales growth, reiterated FY26 outlook, and AI-related 2027 sales upside headlines"
+   },
+   "t": 15.0
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-5.6-luna",
+    "ticker": "PGHN",
+    "latency": 6.5,
+    "tokens_in": 872,
+    "tokens_out": 999,
+    "cost": 0.0013732,
+    "quality": 5,
+    "scores": {
+     "groundedness": 5,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 5
+    },
+    "checks_passed": 6,
+    "checks_total": 6,
+    "comment": "The briefing is well-supported, clearly hedged, compliant, and gives concrete validation steps for the account team.",
+    "headline": "Partners Group faces pronounced share-price weakness and a reported private-equity restructuring."
+   },
+   "t": 19.3
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-6-luna",
+    "ticker": "PGHN",
+    "latency": 5.06,
+    "tokens_in": 872,
+    "tokens_out": 685,
+    "cost": 0.0004297,
+    "quality": 5,
+    "scores": {
+     "groundedness": 5,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 5
+    },
+    "checks_passed": 6,
+    "checks_total": 6,
+    "comment": "The briefing is well supported, clearly hedged, compliant, and gives practical validation steps for the account team.",
+    "headline": "Partners Group: negative workbook momentum and subsequent public-feed signals"
+   },
+   "t": 19.3
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-5.5",
+    "ticker": "PGHN",
+    "latency": 8.49,
+    "tokens_in": 872,
+    "tokens_out": 845,
+    "cost": 0.02971,
+    "quality": 5,
+    "scores": {
+     "groundedness": 5,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 5
+    },
+    "checks_passed": 6,
+    "checks_total": 6,
+    "comment": "The briefing is well sourced, clearly separates facts from hedged hypotheses, discloses gaps, and gives practical next steps.",
+    "headline": "Partners Group shows negative workbook momentum and a further post-snapshot share-price decline, alongside public headlines on a credit strategy launch and reported job cuts"
+   },
+   "t": 25.9
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-6-luna",
+    "ticker": "NOVN",
+    "latency": 6.44,
+    "tokens_in": 755,
+    "tokens_out": 812,
+    "cost": 0.0004815,
+    "quality": 5,
+    "scores": {
+     "groundedness": 5,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 5
+    },
+    "checks_passed": 5,
+    "checks_total": 6,
+    "comment": "The briefing is well-supported, clearly hedged, compliant, and gives practical validation steps despite limited account-specific evidence.",
+    "headline": "Novartis account briefing: mixed snapshot performance; two later public-media headlines to validate"
+   },
+   "t": 27.3
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-5.6-luna",
+    "ticker": "NOVN",
+    "latency": 6.16,
+    "tokens_in": 755,
+    "tokens_out": 925,
+    "cost": 0.001261,
+    "quality": 5,
+    "scores": {
+     "groundedness": 5,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 5
+    },
+    "checks_passed": 5,
+    "checks_total": 6,
+    "comment": "The briefing is well supported, clearly hedged, compliant, and gives concrete follow-up actions for the account team.",
+    "headline": "Novartis shows mixed market momentum with subsequent deal and regulatory headlines"
+   },
+   "t": 27.9
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-6-luna",
+    "ticker": "CLN",
+    "latency": 6.56,
+    "tokens_in": 767,
+    "tokens_out": 863,
+    "cost": 0.0005082,
+    "quality": 4.75,
+    "scores": {
+     "groundedness": 5,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 4
+    },
+    "checks_passed": 6,
+    "checks_total": 6,
+    "comment": "Well-grounded and compliant with clear caveats, though actionability is limited by the sparse evidence.",
+    "headline": "Clariant account briefing: positive market snapshot with later public headlines"
+   },
+   "t": 35.1
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-5.5",
+    "ticker": "NOVN",
+    "latency": 9.15,
+    "tokens_in": 755,
+    "tokens_out": 860,
+    "cost": 0.029575,
+    "quality": 5,
+    "scores": {
+     "groundedness": 5,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 5
+    },
+    "checks_passed": 6,
+    "checks_total": 6,
+    "comment": "The briefing is well grounded, clearly separates facts from hedged hypotheses, discloses gaps, and gives practical next steps.",
+    "headline": "Novartis AG briefing: mixed momentum at snapshot, followed by licensing and FDA-related news signals"
+   },
+   "t": 37.0
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-5.6-luna",
+    "ticker": "CLN",
+    "latency": 6.83,
+    "tokens_in": 767,
+    "tokens_out": 1040,
+    "cost": 0.0014014000000000001,
+    "quality": 4.75,
+    "scores": {
+     "groundedness": 5,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 4
+    },
+    "checks_passed": 6,
+    "checks_total": 6,
+    "comment": "The briefing is well supported, clearly hedged, compliant, and gives practical validation steps, though account-specific actions could be slightly sharper.",
+    "headline": "Clariant AG shows positive momentum, with recent public headlines focused on Stahl proceeds and analyst views."
+   },
+   "t": 37.4
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-6-luna",
+    "ticker": "ALC",
+    "latency": 5.27,
+    "tokens_in": 872,
+    "tokens_out": 776,
+    "cost": 0.0004752,
+    "quality": 4.75,
+    "scores": {
+     "groundedness": 5,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 4
+    },
+    "checks_passed": 6,
+    "checks_total": 6,
+    "comment": "Well-supported and compliant briefing with clear hedging, though actions remain somewhat high-level.",
+    "headline": "Alcon: mixed workbook signal; later public-feed close below snapshot level"
+   },
+   "t": 43.1
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-5.6-luna",
+    "ticker": "ALC",
+    "latency": 5.29,
+    "tokens_in": 872,
+    "tokens_out": 795,
+    "cost": 0.0011284,
+    "quality": 4.75,
+    "scores": {
+     "groundedness": 5,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 4
+    },
+    "checks_passed": 6,
+    "checks_total": 6,
+    "comment": "Well-supported and appropriately hedged, with clear gaps and practical validation steps.",
+    "headline": "Alcon: mixed workbook signal with subsequent share-price weakness"
+   },
+   "t": 45.6
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-5.5",
+    "ticker": "CLN",
+    "latency": 9.28,
+    "tokens_in": 767,
+    "tokens_out": 993,
+    "cost": 0.033625,
+    "quality": 5,
+    "scores": {
+     "groundedness": 5,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 5
+    },
+    "checks_passed": 6,
+    "checks_total": 6,
+    "comment": "The briefing is well grounded, clearly hedged, compliant, and provides specific next steps and data gaps.",
+    "headline": "Clariant AG shows positive momentum and leads Materials peer set in the provided snapshot"
+   },
+   "t": 47.3
+  },
+  {
+   "type": "bake_result",
+   "result": {
+    "model": "gpt-5.5",
+    "ticker": "ALC",
+    "latency": 8.81,
+    "tokens_in": 872,
+    "tokens_out": 928,
+    "cost": 0.0322,
+    "quality": 5,
+    "scores": {
+     "groundedness": 5,
+     "separation": 5,
+     "compliance": 5,
+     "usefulness": 5
+    },
+    "checks_passed": 6,
+    "checks_total": 6,
+    "comment": "The briefing is well supported, clearly hedged, compliant, and provides concrete validation steps for the account team.",
+    "headline": "Alcon Inc. shows mixed workbook momentum with later public-feed price weakness"
+   },
+   "t": 57.9
+  },
+  {
+   "type": "bake_done",
+   "summary": {
+    "models": [
+     {
+      "model": "gpt-5.5",
+      "tier": "Frontier",
+      "runs": 5,
+      "avg_latency": 9.9,
+      "avg_quality": 4.95,
+      "avg_cost": 0.032722,
+      "cost_per_1000": 32.72,
+      "avg_tokens_out": 953,
+      "check_rate": 0.97
+     },
+     {
+      "model": "gpt-6-luna",
+      "tier": "Newest, low cost",
+      "runs": 5,
+      "avg_latency": 6.1,
+      "avg_quality": 4.85,
+      "avg_cost": 0.00048318,
+      "cost_per_1000": 0.48,
+      "avg_tokens_out": 801,
+      "check_rate": 0.93
+     },
+     {
+      "model": "gpt-5.6-luna",
+      "tier": "Previous gen, low cost",
+      "runs": 5,
+      "avg_latency": 6.1,
+      "avg_quality": 4.9,
+      "avg_cost": 0.00128608,
+      "cost_per_1000": 1.29,
+      "avg_tokens_out": 934,
+      "check_rate": 0.93
+     }
+    ],
+    "recommendation": {
+     "model": "gpt-6-luna",
+     "reason": "Cheapest model that clears the quality bar of 4.7/5 and passes policy checks."
+    },
+    "quality_bar": 4.7
+   },
+   "t": 57.9
+  }
+ ]
+}

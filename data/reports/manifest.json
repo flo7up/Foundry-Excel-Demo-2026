@@ -1,0 +1,37 @@
+{
+  "retrieved": "2026-10-15",
+  "note": "Public half-year reports published by the companies. Kept locally, never modified, not for redistribution.",
+  "documents": [
+    {
+      "ticker": "VACN", "match": "VAT", "company": "VAT Group AG", "file": "VACN_h1_2026.pdf",
+      "title": "Half-Year Report 2026", "kind": "Half-year report", "period": "H1 2026", "period_end": "2026-06-30",
+      "standard": "IFRS", "currency": "CHF",
+      "url": "https://www.vatgroup.com/files/live/sites/vat/files/Investor%20relations/half-year-report/2026/vat-half-year-report-2026-en.pdf"
+    },
+    {
+      "ticker": "PGHN", "match": "Partners Group", "company": "Partners Group Holding AG", "file": "PGHN_h1_2026.pdf",
+      "title": "Interim Report 2026", "kind": "Half-year report", "period": "H1 2026", "period_end": "2026-06-30",
+      "standard": "IFRS", "currency": "CHF",
+      "url": "https://www.partnersgroup.com/~/media/Files/P/Partnersgroup/Universal/shareholders/reports-and-presentations/2026/pghn-interim-report-2026.pdf"
+    },
+    {
+      "ticker": "NOVN", "match": "Novartis", "company": "Novartis AG", "file": "NOVN_h1_2026.pdf",
+      "title": "Second Quarter and Half Year 2026 Condensed Interim Financial Report", "kind": "Half-year report", "period": "H1 2026", "period_end": "2026-06-30",
+      "standard": "IFRS", "currency": "USD",
+      "url": "https://www.novartis.com/sites/novartis_com/files/q2-2026-interim-financial-report-en.pdf"
+    },
+    {
+      "ticker": "CLN", "match": "Clariant", "company": "Clariant AG", "file": "CLN_h1_2026.pdf",
+      "title": "Condensed Consolidated Interim Financial Statements, First Half Year 2026", "kind": "Half-year report", "period": "H1 2026", "period_end": "2026-06-30",
+      "standard": "IFRS", "currency": "CHF",
+      "note": "The first page of the file still shows the cover of the 2022 report. The statements inside are for the first half of 2026.",
+      "url": "https://www.clariant.com/-/media/Files/Corporate/Investors/Quarterly-Results/Q2-2026/Clariant-Report-H1-2026-Financial-Review-20260731-EN.pdf"
+    },
+    {
+      "ticker": "ALC", "match": "Alcon", "company": "Alcon Inc.", "file": "ALC_h1_2026.pdf",
+      "title": "Interim Financial Report, Second Quarter 2026", "kind": "Half-year report", "period": "H1 2026", "period_end": "2026-06-30",
+      "standard": "IFRS", "currency": "USD",
+      "url": "https://s1.q4cdn.com/963204942/files/doc_earnings/2026/q2/filing/Q2-2026-Interim-Financial-Report.pdf"
+    }
+  ]
+}

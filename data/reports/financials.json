@@ -1,0 +1,201 @@
+{
+ "extracted_at": "15.10.2026 21:21",
+ "model": "gpt-6-luna",
+ "companies": {
+  "VACN": {
+   "currency": "CHF",
+   "items": {
+    "revenue": {
+     "label": "Net sales",
+     "h1_2026": 511.9,
+     "h1_2025": 558.0,
+     "printed_2026": 511.9,
+     "printed_2025": 558.0,
+     "scale": "millions",
+     "page": 2,
+     "quote": "Net sales 511.9 558.0 –8.3%",
+     "verified": true
+    },
+    "operating_profit": {
+     "label": "EBIT",
+     "h1_2026": 122.1,
+     "h1_2025": 142.0,
+     "printed_2026": 122.1,
+     "printed_2025": 142.0,
+     "scale": "millions",
+     "page": 2,
+     "quote": "EBIT 122.1 142.0 –14.0%",
+     "verified": true
+    },
+    "net_income": {
+     "label": "Net income",
+     "h1_2026": 98.8,
+     "h1_2025": 105.6,
+     "printed_2026": 98.8,
+     "printed_2025": 105.6,
+     "scale": "millions",
+     "page": 2,
+     "quote": "Net income 98.8 105.6 –6.4%",
+     "verified": true
+    }
+   },
+   "problems": {}
+  },
+  "PGHN": {
+   "currency": "CHF",
+   "items": {
+    "revenue": {
+     "label": "Revenues",
+     "h1_2026": 1121.0,
+     "h1_2025": 1210.0,
+     "printed_2026": 1121,
+     "printed_2025": 1210,
+     "scale": "millions",
+     "page": 4,
+     "quote": "Revenues (in CHF m) 1'121 1'210",
+     "verified": true
+    },
+    "operating_profit": {
+     "label": "Operating profit",
+     "h1_2026": 622.2,
+     "h1_2025": 725.0,
+     "printed_2026": 622.2,
+     "printed_2025": 725.0,
+     "scale": "millions",
+     "page": 45,
+     "quote": "Operating profit 622.2 725.0",
+     "verified": true
+    },
+    "net_income": {
+     "label": "Profit for the period",
+     "h1_2026": 502.0,
+     "h1_2025": 578.0,
+     "printed_2026": 502,
+     "printed_2025": 578,
+     "scale": "millions",
+     "page": 24,
+     "quote": "Profit for the period 502 578",
+     "verified": true
+    }
+   },
+   "problems": {}
+  },
+  "NOVN": {
+   "currency": "USD",
+   "items": {
+    "revenue": {
+     "label": "Net sales to third parties",
+     "h1_2026": 27521.0,
+     "h1_2025": 27287.0,
+     "printed_2026": 27521,
+     "printed_2025": 27287,
+     "scale": "millions",
+     "page": 3,
+     "quote": "Net sales to third parties 14 408 14 054 3 1 27 521 27 287 1 -2",
+     "verified": true
+    },
+    "operating_profit": {
+     "label": "Operating income",
+     "h1_2026": 8985.0,
+     "h1_2025": 9527.0,
+     "printed_2026": 8985,
+     "printed_2025": 9527,
+     "scale": "millions",
+     "page": 3,
+     "quote": "Operating income 4 750 4 864 -2 -3 8 985 9 527 -6 -7",
+     "verified": true
+    },
+    "net_income": {
+     "label": "Net income",
+     "h1_2026": 6413.0,
+     "h1_2025": 7633.0,
+     "printed_2026": 6413,
+     "printed_2025": 7633,
+     "scale": "millions",
+     "page": 3,
+     "quote": "Net income 3 257 4 024 -19 -19 6 413 7 633 -16 -17",
+     "verified": true
+    }
+   },
+   "problems": {}
+  },
+  "CLN": {
+   "currency": "CHF",
+   "items": {
+    "revenue": {
+     "label": "Sales",
+     "h1_2026": 1859.3,
+     "h1_2025": 1980.7,
+     "printed_2026": 1859.3,
+     "printed_2025": 1980.7,
+     "scale": "millions",
+     "page": 2,
+     "quote": "Sales 1 859.3 100.0 1 980.7 100.0",
+     "verified": true
+    },
+    "operating_profit": {
+     "label": "Operating income",
+     "h1_2026": 182.9,
+     "h1_2025": 138.1,
+     "printed_2026": 182.9,
+     "printed_2025": 138.1,
+     "scale": "millions",
+     "page": 2,
+     "quote": "Operating income 182.9 9.8 138.1 7.0",
+     "verified": true
+    },
+    "net_income": {
+     "label": "Net income",
+     "h1_2026": 85.0,
+     "h1_2025": 44.2,
+     "printed_2026": 85.0,
+     "printed_2025": 44.2,
+     "scale": "millions",
+     "page": 2,
+     "quote": "Net income 85.0 4.6 44.2 2.3",
+     "verified": true
+    }
+   },
+   "problems": {}
+  },
+  "ALC": {
+   "currency": "USD",
+   "items": {
+    "revenue": {
+     "label": "Net sales",
+     "h1_2026": 5467.0,
+     "h1_2025": 5028.0,
+     "printed_2026": 5467,
+     "printed_2025": 5028,
+     "scale": "millions",
+     "page": 2,
+     "quote": "Net sales 2,782 2,577 8 5,467 5,028 9",
+     "verified": true
+    },
+    "operating_profit": {
+     "label": "Operating income",
+     "h1_2026": 303.0,
+     "h1_2025": 715.0,
+     "printed_2026": 303,
+     "printed_2025": 715,
+     "scale": "millions",
+     "page": 2,
+     "quote": "Operating income 11 247 (96) 303 715 (58)",
+     "verified": true
+    },
+    "net_income": {
+     "label": "Net income",
+     "h1_2026": 189.0,
+     "h1_2025": 526.0,
+     "printed_2026": 189,
+     "printed_2025": 526,
+     "scale": "millions",
+     "page": 2,
+     "quote": "Net income — 176 (100) 189 526 (64)",
+     "verified": true
+    }
+   },
+   "problems": {}
+  }
+ }
+}
