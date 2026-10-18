@@ -1,0 +1,9 @@
+.env
+.start-pids-*.json
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+# Company reports are public but copyrighted and not for redistribution (see data/reports/manifest.json).
+data/reports/*.pdf
+data/reports/index.json
