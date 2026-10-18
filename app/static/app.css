@@ -68,7 +68,7 @@ body {
   margin-left: auto; white-space: nowrap; font-size: 10px; padding: 2px 7px; border-radius: 99px; background: rgba(124, 92, 255, 0.18); color: #b9a8ff; font-weight: 600;
 }
 #nav .sep { font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--faint); padding: 14px 12px 4px; }
-.rail-foot { margin-top: auto; font-size: 11.5px; color: var(--faint); padding: 0 8px; line-height: 1.5; }
+.rail-foot { margin-top: auto; font-size: 11.5px; color: var(--faint); padding: 0 8px; line-height: 1.5; overflow-wrap: anywhere; }
 
 /* ---------------------------------------------------------------- top bar */
 main { min-width: 0; padding: 0 32px 48px; }
@@ -78,7 +78,10 @@ main { min-width: 0; padding: 0 32px 48px; }
 }
 .topbar h1 { margin: 0; font-size: 24px; font-weight: 650; letter-spacing: -0.3px; }
 .topbar p { margin: 2px 0 0; color: var(--muted); }
-.top-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+.topbar > div:first-child { flex: 1 1 280px; min-width: 0; }
+.topbar h1 { display: flex; align-items: center; gap: 0; }
+.top-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex: none; }
+.ta-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
 .chip {
   display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 500;
   background: var(--surface); border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
@@ -378,7 +381,7 @@ ul.plain { margin: 0; padding-left: 18px; color: #b8c0dc; } ul.plain li { margin
   #nav .long { display: none; } #nav .short { display: inline; }
   #nav .sep { height: 1px; padding: 0; margin: 8px 10px; background: var(--border); font-size: 0; }
 }
-@media (max-width: 1280px) { .topbar { flex-wrap: wrap; } .top-actions { justify-content: flex-start; } }
+@media (max-width: 1280px) { .topbar { flex-wrap: wrap; } .top-actions { flex: 1 1 100%; flex-direction: row; flex-wrap: wrap; align-items: center; } .ta-row { justify-content: flex-start; } }
 @media (max-width: 1180px) { .mon-top { grid-template-columns: 1fr; } .mon-body { grid-template-columns: 1fr; } .trace-col { position: static; } .trace { max-height: 420px; } .pipeline { grid-template-columns: repeat(3, minmax(0, 1fr)); } .agent::after { display: none; } .ctl { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: end; } }
 @media (max-width: 1100px) {
   .app { grid-template-columns: 1fr; } .rail { display: none; } .g3, .g4, .g5, .ladder { grid-template-columns: 1fr 1fr; }
@@ -412,6 +415,7 @@ ul.plain { margin: 0; padding-left: 18px; color: #b8c0dc; } ul.plain li { margin
 .xl-icon::after { content: ""; position: absolute; top: 0; right: 0; width: 12px; height: 12px; background: rgba(255, 255, 255, 0.28); border-bottom-left-radius: 8px; }
 .xl-icon.sm { width: 36px; height: 42px; font-size: 9.5px; }
 .ell { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip.ell { display: inline-flex; } .chip.ell .nm { overflow: hidden; text-overflow: ellipsis; }
 .reqs { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip.opt { opacity: 0.6; }
 .mt-s { margin-top: 12px; }
@@ -726,6 +730,7 @@ body.big .app { zoom: 1.15; }
 .step { gap: 9px; }
 .step-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12.5px; padding: 6px 0; border-top: 1px solid rgba(255, 255, 255, 0.06); }
 .step-meta span { color: var(--muted); } .step-meta b { font-weight: 600; text-align: right; }
+.step-note { padding: 7px 12px; border-radius: 10px; border: 1px dashed var(--border); color: var(--muted); font-size: 12.5px; text-align: center; }
 .step .quote { margin: 0; }
 .step .disc.flat { margin: 0 -2px; }
 .spec-legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); align-items: center; }
@@ -828,7 +833,7 @@ mark { background: rgba(255, 181, 71, 0.3); color: var(--text); border-radius: 3
 /* chat: peer explorer, attached companies and clickable company mentions */
 .chat-side { max-height: calc(100vh - var(--topbar-h, 100px) - 32px); overflow-y: auto; scrollbar-width: thin; }
 #explorer select { width: 100%; margin: 6px 0 10px; }
-.peers { display: grid; gap: 4px; }
+#xpeers { display: grid; gap: 4px; }
 .peer { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: 10px minmax(0, 1fr) 44px 15px 15px; gap: 8px; align-items: center; padding: 7px 9px; border-radius: 10px; font-size: 12.5px; border: 1px solid transparent; background: rgba(255, 255, 255, 0.03); transition: background 0.15s, border-color 0.15s; }
 .peer:hover { background: var(--surface-2); border-color: rgba(124, 92, 255, 0.55); }
 .peer:focus-visible, .cref:focus-visible, .pill button:focus-visible, .linkbtn:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 1px; }

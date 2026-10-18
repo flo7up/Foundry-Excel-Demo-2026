@@ -54,11 +54,11 @@ const state = { mode: localStorage.getItem('mode'), status: null, source: null, 
 /* ------------------------------------------------------------------ chrome */
 const PAGES = {
   overview: { title: 'From answers to action', sub: 'One workbook, three levels of AI: Excel helps, Copilot Studio assists, Foundry executes.', icon: 'overview', label: 'Overview' },
-  upload: { title: 'Upload your workbook', sub: 'An agent must read and check the data before it acts.', icon: 'upload', label: 'Upload workbook', short: 'Upload', tag: 'Step 1' },
-  reports: { title: 'Public reports', sub: 'Facts from company filings, each with its page number.', icon: 'reports', label: 'Public reports', short: 'Reports', tag: 'New' },
+  upload: { title: 'Upload your workbook', sub: 'An agent must read and check the data before it acts.', icon: 'upload', label: 'Upload workbook', short: 'Upload' },
+  reports: { title: 'Public reports', sub: 'Facts from company filings, each with its page number.', icon: 'reports', label: 'Public reports', short: 'Reports' },
   workbook: { title: 'Workbook insights', sub: 'Stage 1: fast answers from the data, but nobody checks the data.', icon: 'workbook', label: 'Workbook', tag: 'Stage 1' },
-  monitor: { title: 'Account Monitor', sub: 'Stage 3: four agents run one process, a person decides.', icon: 'monitor', label: 'Account Monitor', short: 'Monitor', tag: 'Stage 3' },
-  chat: { title: 'Insights chat', sub: 'Ask in plain words. Every answer cites its sources and is checked.', icon: 'chat', label: 'Insights chat', short: 'Chat', tag: 'New' },
+  monitor: { title: 'Account Monitor', sub: 'Stage 3: four agents run one process, a person decides.', icon: 'monitor', label: 'Account Monitor', short: 'Monitor' },
+  chat: { title: 'Insights chat', sub: 'Ask in plain words. Every answer cites its sources and is checked.', icon: 'chat', label: 'Insights chat', short: 'Chat' },
   trust: { title: 'Trust Lab', sub: 'Prove an agent is safe before it goes live.', icon: 'trust', label: 'Trust Lab' },
   bakeoff: { title: 'Model Bake-off', sub: 'Pick the cheapest model that is good enough.', icon: 'bake', label: 'Model Bake-off', short: 'Bake-off' },
 };
@@ -66,7 +66,7 @@ const PAGES = {
 function renderNav() {
   const cur = currentPage();
   const item = (k) => `<a href="#/${k}" title="${PAGES[k].label}" class="${cur === k ? 'active' : ''}" ${cur === k ? 'aria-current="page"' : ''}>${ICON[PAGES[k].icon]}<span class="lbl"><span class="long">${PAGES[k].label}</span><span class="short">${PAGES[k].short || PAGES[k].label}</span></span>${PAGES[k].tag ? `<span class="tag">${PAGES[k].tag}</span>` : ''}</a>`;
-  $('#nav').innerHTML = `${item('overview')}${item('upload')}${item('workbook')}${item('reports')}<div class="sep">Microsoft Foundry</div>${item('monitor')}${item('chat')}${item('trust')}${item('bakeoff')}`;
+  $('#nav').innerHTML = `${item('overview')}${item('upload')}${item('workbook')}${item('reports')}<div class="sep">Stage 3 · Microsoft Foundry</div>${item('monitor')}${item('chat')}${item('trust')}${item('bakeoff')}`;
   $('#topnav').innerHTML = Object.keys(PAGES).map(item).join('');
   $('#topnav a.active')?.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
@@ -166,8 +166,8 @@ const DEMO_STEPS = [
   { page: 'upload', min: 2, wait: 'The animation takes about 8 seconds. Skip it if you are short on time.', title: 'Load the workbook', do: 'Click "Use the sample workbook" and let the animation run, or drop your own file.', say: 'Before an agent acts, someone has to read the data properly. Watch the columns being mapped and the quality being checked.' },
   { page: 'workbook', min: 2, title: 'Stage 1: AI helps', do: 'Show the KPIs, the sector chart and the signal comparison.', say: 'This is what Copilot in Excel gives every user: fast answers. It does not check the data or run a process.' },
   { page: 'reports', min: 2, wait: 'Search works offline with keywords and live with embeddings.', title: 'Bring in public reports', do: 'Show growth and margin, click a page chip to open the PDF, then search for a topic.', say: 'Prices show what the market did. Reports show what the business did, and every figure has its page.' },
-  { page: 'chat', min: 2, wait: 'Each answer takes 3 to 8 seconds live.', title: 'Ask about peers', do: 'Click Novartis, then two peers in the Peer explorer, then "Compare". Finish with the trap question "Should I buy...".', say: 'The peer selection is our own screen, built around the agent. The agent answers from tools, every number has a source, and advice is held back.' },
   { page: 'monitor', min: 4, wait: 'A live cycle takes about 20 seconds. Talk through the agents while it runs.', title: 'Stage 3: AI executes', do: 'Press "Run monitoring cycle", open the agent trace, then approve the briefing.', say: 'Four agents, a model chosen for each job, a policy check and a person who decides. Every step is traced.' },
+  { page: 'chat', min: 2, wait: 'Each answer takes 3 to 8 seconds live.', title: 'Ask about peers', do: 'Press "Discuss this briefing in chat" under the briefing. Then click Novartis and two peers in the Peer explorer, press "Compare", and finish with the trap question "Should I buy...".', say: 'The peer selection is our own screen, built around the agent. The agent answers from tools, every number has a source, and advice is held back.' },
   { page: 'trust', min: 3, wait: 'Live takes about 20 seconds. Explain the test cases while it runs.', title: 'Prove it is safe', do: 'Press "Run evaluation". Click one red cell and the shield cell.', say: 'Before go-live you can show evidence. Failures are useful: they say what to fix.' },
   { page: 'bakeoff', min: 2, wait: 'Live takes about 1 minute: talk through the three models while it runs, or switch to Offline replay (8 seconds).', title: 'Choose the right model', do: 'Press "Run bake-off" and point to the cheapest model above the quality bar.', say: 'Not every job needs the biggest model. Foundry lets you decide with data.' },
   { page: 'overview', min: 1, title: 'Close: better together', do: 'Scroll to "Better together".', say: 'Copilot Studio is the front door for people. Foundry runs the agents that do the work behind it.' },
@@ -208,16 +208,16 @@ function renderTop() {
   const liveOk = s?.live_available;
   const live = state.mode === 'live';
   const src = state.source;
-  $('#top-actions').innerHTML = `
+  $('#top-actions').innerHTML = `<div class="ta-row">
     <a class="chip file" href="#/upload" title="Change the Excel workbook">${ICON.file}<span class="nm">${esc(src?.name || 'No workbook')}</span><span class="muted">${src?.is_sample ? '· sample' : '· your file'}</span></a>
     <span class="chip snap" title="Date of the market data in the workbook">Data of ${esc(src?.snapshot || '')}</span>
-    <span class="chip ${live ? 'good' : ''}" title="${live ? esc(s.endpoint || '') : 'No Azure calls are made'}"><span class="dot ${live ? 'on' : ''}"></span>${live ? 'Foundry connected' : 'Recorded results'}</span>
-    <div class="seg" id="mode-seg" role="group" aria-label="Run mode">
+    <span class="chip ${live ? 'good' : ''}" title="${live ? esc(s.endpoint || '') : 'No Azure calls are made'}"><span class="dot ${live ? 'on' : ''}"></span>${live ? 'Foundry connected' : 'Recorded results'}</span></div>
+    <div class="ta-row"><div class="seg" id="mode-seg" role="group" aria-label="Run mode">
       <button data-mode="live" class="${live ? 'on' : ''} ${liveOk ? '' : 'disabled'}" aria-pressed="${live}" title="${liveOk ? 'Call real models in Microsoft Foundry' : 'Run az login and set FOUNDRY_ENDPOINT in .env'}">Live · Foundry</button>
       <button data-mode="offline" class="${live ? '' : 'on'}" aria-pressed="${!live}" title="Replay recorded results, no Azure needed">Offline replay</button>
     </div>
     <button class="btn ghost sm" id="guide-btn" aria-expanded="${!$('#dg').hidden}" title="Open the presenter run-book">${ICON.play}Demo guide</button>
-    <button class="btn ghost sm" id="zoom-btn" aria-pressed="${document.body.classList.contains('big')}" title="Larger text and spacing for presenting on a projector">A+</button>`;
+    <button class="btn ghost sm" id="zoom-btn" aria-pressed="${document.body.classList.contains('big')}" title="Larger text and spacing for presenting on a projector">A+</button></div>`;
   $('#guide-btn').onclick = () => toggleDrawer();
   $('#zoom-btn').onclick = () => {
     const on = document.body.classList.toggle('big');
@@ -308,7 +308,7 @@ async function overview(el) {
   const pick = (stage, tool) => prompts.find((p) => p.stage.startsWith(stage) && (!tool || p.tool === tool))?.prompt || '';
   const stages = [
     { n: 1, h: 'AI helps', tool: 'Copilot in Excel', ic: 'workbook', line: 'Ask questions about data you already have.', auto: 1, who: 'Every business user', q: pick('1'), href: '#/workbook', cta: 'See the workbook insights' },
-    { n: 2, h: 'AI works with you', tool: 'Copilot Studio', ic: 'human', line: 'Low-code assistants and simple flows.', auto: 2, who: 'Business makers and IT', q: pick('2', 'Copilot Studio Agent'), href: null, cta: 'Demo this live in Copilot Studio' },
+    { n: 2, h: 'AI works with you', tool: 'Copilot Studio', ic: 'human', line: 'Low-code assistants and simple flows.', auto: 2, who: 'Business makers and IT', q: pick('2', 'Copilot Studio Agent'), href: null, cta: 'Shown in Copilot Studio, not in this app' },
     { n: 3, h: 'AI executes', tool: 'Microsoft Foundry', ic: 'bolt', line: 'Governed agents that run a whole process.', auto: 3, who: 'Developers and AI engineers', q: pick('3'), href: '#/monitor', cta: 'Run the Account Monitor' },
   ];
   // Positions are illustrative: they show where each product sits between two ends, not a score.
@@ -344,7 +344,7 @@ async function overview(el) {
           <div class="step-meta"><span>Autonomy</span>${meter(s.n, 3, 'Autonomy')}</div>
           <div class="step-meta"><span>Built by</span><b>${s.who}</b></div>
           ${s.q ? disc('Example prompt', `<div class="quote">“${esc(s.q)}”</div>`, { cls: 'flat' }) : ''}
-          ${s.href ? `<a class="btn ${s.n === 3 ? '' : 'ghost'} sm" href="${s.href}">${s.cta}</a>` : `<div class="btn ghost sm" style="pointer-events:none;opacity:.7">${s.cta}</div>`}
+          ${s.href ? `<a class="btn ${s.n === 3 ? '' : 'ghost'} sm" href="${s.href}">${s.cta}</a>` : `<div class="step-note">${s.cta}</div>`}
           ${s.n < 3 ? `<span class="arrow">${ICON.arrow}</span>` : ''}
         </div>`).join('')}
     </div>
@@ -1100,7 +1100,8 @@ function mdLite(text, sources = {}, tickers = null) {
   let html = '', inList = false;
   for (const raw of String(text).split('\n')) {
     const m = raw.match(/^\s*[-*•]\s+(.*)$/);
-    const t = esc(m ? m[1] : raw).replace(/\(([A-Z]{2,5})\)|\b([A-Z]{3,5})\b/g, tk).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\[((?:SEC|SIG)-\d+|REP-[A-Z]+-p\d+)\]/g, (_x, id) => chip(id));
+    // One pass, citations first: otherwise the NOVN inside [REP-NOVN-p3] becomes a company chip and the report link is lost.
+    const t = esc(m ? m[1] : raw).replace(/\[((?:SEC|SIG)-\d+|REP-[A-Z]+-p\d+)\]|\(([A-Z]{2,5})\)|\b([A-Z]{3,5})\b/g, (x, id, a, b) => (id ? chip(id) : tk(x, a, b))).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
     if (m) { if (!inList) { html += '<ul>'; inList = true; } html += `<li>${t}</li>`; }
     else { if (inList) { html += '</ul>'; inList = false; } if (t.trim()) html += `<p>${t}</p>`; }
   }
@@ -1148,7 +1149,7 @@ async function chatView(el) {
       <div class="card chat rise">
         <div class="chat-head"><span class="avatar" style="width:30px;height:30px;border-radius:10px">${ICON.chat}</span><b>Insights Assistant</b>
           <span class="chip ${liveOn() ? 'good' : ''}" id="modechip">${esc(modeText())}</span>
-          <span class="chip info ell" style="max-width:190px">${ICON.file.replace('<svg', '<svg width="13" height="13"')}${esc(s.name)}</span>
+          <span class="chip info ell" style="max-width:190px" title="${esc(s.name)}">${ICON.file.replace('<svg', '<svg width="13" height="13" style="flex:none"')}<span class="nm">${esc(s.name)}</span></span>
           <button class="btn ghost sm" id="newchat" style="margin-left:auto">New chat</button></div>
         <div class="chat-scroll" id="msgs"></div>
         <div class="ref-tray" id="tray" hidden><div class="pills" id="pills"></div><div class="acts" id="acts"></div></div>

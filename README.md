@@ -10,7 +10,15 @@ You need Python 3.12 and, for live mode, an Azure sign-in (`az login`).
 .\start.ps1
 ```
 
-One command opens the server in its own terminal window, so your current terminal stays free. The script checks Python and the packages (and installs them on the first run), creates `.env` if it is missing, waits until the app answers, reports whether live mode is available and opens the browser at <http://127.0.0.1:8765>.
+One command opens the server in its own terminal window, so your current terminal stays free. The script checks Python and the packages (and installs them on the first run), creates `.env` if it is missing, downloads the five public reports on the first run (see Public reports), waits until the app answers, reports whether live mode is available and opens the browser at <http://127.0.0.1:8765>.
+
+On a fresh clone without PowerShell, run the same first steps by hand:
+
+```powershell
+python -m pip install -r requirements.txt
+python -m app.reports fetch       # the report PDFs are not in the repository
+python -m uvicorn app.main:app --port 8765
+```
 
 | Command | What it does |
 |---------|--------------|
@@ -29,9 +37,9 @@ To run in the current terminal instead, use `.\run.ps1`. If the page is open but
 | Page | What it shows | Stage |
 |------|---------------|-------|
 | Overview | The three levels of AI, Copilot Studio versus Foundry, and how they work together | All |
-| Upload workbook | Drop an Excel file and watch the app read it: sheet found, columns mapped to app fields, companies extracted, data checked | Step 1 |
+| Upload workbook | Drop an Excel file and watch the app read it: sheet found, columns mapped to app fields, companies extracted, data checked | Setup |
 | Workbook | KPIs, sector momentum, rankings and data-quality findings computed from the loaded file | 1 |
-| Public reports | Half-year reports published by five companies: verified headline figures with page links, growth and margin across companies, and a search over the report text | New |
+| Public reports | Half-year reports published by five companies: verified headline figures with page links, growth and margin across companies, and a search over the report text | Data |
 | Account Monitor | Four Foundry agents (Data Steward, Signal Scout, Account Analyst, Compliance Reviewer) and a human approval step, with a live trace of tool calls, tokens and cost. The agents work on real share prices and news headlines | 3 |
 | Insights chat | Chat with the peer and competitor analysis. A peer explorer lets you click companies to attach them to the question. Every answer lists its sources and is checked | 3 |
 | Trust Lab | 15 test cases run against a basic agent and a governed agent, scored by rules and a judge model | 3 |
@@ -57,7 +65,7 @@ Each page shows the main idea first and keeps the detail one click away.
 ## Help for the audience and the presenter
 
 * Dotted terms such as momentum score, signal, public feed, judge model and tokens show a plain-language explanation on hover or focus
-* The Demo guide button opens an 8 step run-book with what to do and what to say, and moves you through the pages with Back and Next
+* The Demo guide button opens a 9 step run-book (about 20 minutes) with what to do and what to say, and moves you through the pages with Back and Next
 * The A+ button enlarges everything for a projector
 * On narrow windows the left rail shrinks to labelled icons and then turns into a tab bar at the top
 * After the Account Monitor produces a briefing, "Discuss this briefing in chat" opens the chat and asks about it
@@ -114,7 +122,7 @@ Price data alone says what the market did. The app also reads the half-year repo
 | Clariant | Condensed Consolidated Interim Financial Statements, H1 2026 | IFRS |
 | Alcon | Interim Financial Report, Q2 2026 | IFRS |
 
-The PDFs are public but copyrighted. They are kept in `data/reports` on this machine, are never modified and are not part of the project. Each answer quotes only short passages with the page number. `data/reports/manifest.json` records where each file came from. Download the PDFs from the company websites listed there to rebuild the folder.
+The PDFs are public but copyrighted. They are kept in `data/reports` on this machine, are never modified and are not in the repository (`.gitignore` excludes them and the page index built from them). Each answer quotes only short passages with the page number. `data/reports/manifest.json` records where each file came from and its SHA-256. `python -m app.reports fetch` downloads the missing files from the company websites and keeps a file only when it is byte for byte the one the figures were checked on; `start.ps1` runs it on the first start. If a company has replaced or moved its file, fetch says so and leaves it out, and the rest of the demo still works.
 
 How it works:
 
@@ -126,6 +134,7 @@ How it works:
 Commands:
 
 ```powershell
+python -m app.reports fetch      # download the PDFs listed in manifest.json (a fresh clone has none)
 python -m app.reports build      # read the PDFs, split into passages, embed them (embedding needs az login)
 python -m app.reports extract    # let a model read the headline figures, keep only those that pass the checks
 python -m app.reports status
@@ -167,7 +176,7 @@ Run the pre-flight check once on the machine you present from. It needs the app 
 .\start.ps1 -Rehearse -Full       # also runs Trust Lab and Model Bake-off live (about 2 minutes, a few cents)
 ```
 
-The result is READY, READY WITH CAUTION (read the warnings) or NOT READY (fix the FAIL lines). A failed sign-in names the fix: `az login`.
+The result is READY, READY WITH CAUTION (read the warnings) or NOT READY (fix the FAIL lines). A failed sign-in names the fix: `az login`. Missing report PDFs are a warning that names `python -m app.reports fetch`.
 
 Timings measured live (your network and model load will vary):
 
@@ -219,8 +228,8 @@ The tests treat the Excel file as ground truth and read it independently of the 
 
 ```powershell
 pip install pytest
-python -m pytest -m "not ui"                  # 377 offline tests, about 20 seconds, no Azure needed
-python -m pytest                              # 437 tests including the 60 browser tests, about 3 minutes
+python -m pytest -m "not ui"                  # 379 offline tests, about 20 seconds, no Azure needed
+python -m pytest                              # 439 tests including the 60 browser tests, about 3 minutes
 $env:RUN_LIVE=1; python -m pytest -m live     # 21 tests that ask real models about the Excel data, the reports and the clicked companies
 ```
 
@@ -229,7 +238,7 @@ The browser tests need Playwright and Chromium (`pip install playwright; playwri
 * Page text: every page has a word limit for what a first-time viewer sees on arrival (for example 140 words for the chat), so new text has to go behind a disclosure
 * Browser behaviour: the guide starts closed and is remembered per page, finding tiles and table rows expand on request, finished upload steps fold, the Account Monitor briefing is an accordion, the Trust Lab heat map matches the scores, and no page scrolls sideways at 1200, 900 and 600 pixels
 
-* Public reports: every figure equals the value read by hand from the PDF, the three figure checks reject made-up quotes, wrong pages and numbers from different rows, search finds the right page offline, answers are grounded and cite pages, a report with hidden instructions is not followed, and the PDFs are never modified. They skip when the PDFs are not on the machine
+* Public reports: every figure equals the value read by hand from the PDF, the three figure checks reject made-up quotes, wrong pages and numbers from different rows, search finds the right page offline, answers are grounded and cite pages, a report with hidden instructions is not followed, and the PDFs are never modified. They skip when the PDFs are not on the machine. The download keeps only files with the recorded SHA-256 and survives a dead link
 * Excel integrity: sheets, 50 unique rows, the 6 securities without data, formula weights, cached values
 * App versus Excel: every field, momentum scores, corrected signals, KPIs, sector averages, share classes
 * Upload: column mapping (including German names and title rows), percent handling, missing values, zero prices, formulas without results, merged cells, a 2000 row file, rejected files, real events for an uploaded portfolio, no invented events for unknown companies, example files that contain real values, and the pages that use an uploaded file
@@ -265,11 +274,14 @@ The Data Steward agent reports these issues, which also make good talking points
 
 ## Suggested 20-minute flow
 
-1. Overview (2 min): the ladder and the comparison table.
-2. Upload workbook (3 min): drop the file and narrate the mapping and the extracted companies.
-3. Workbook (2 min): the findings and the "same data, two answers" panel.
+This is the order of the Demo guide in the app, which also shows what to say and how long each live run takes.
+
+1. Overview (2 min): the three stages and where Copilot Studio and Foundry sit.
+2. Upload workbook (2 min): use the sample workbook and narrate the mapping and the quality findings.
+3. Workbook (2 min): the KPIs, the sector chart and the "same data, two answers" panel.
 4. Public reports (2 min): growth and margin across the five companies, open a figure's PDF page, search for the outlook.
-5. Account Monitor (5 min): run a cycle in live mode, open the trace, approve the briefing.
-6. Insights chat (4 min): click Novartis and two peers in the Peer explorer and press Compare, ask for Novartis' results, then try the trap question. Say that the selection is your own interface around the agent.
-7. Trust Lab (2 min): run the evaluation and open a failing case.
+5. Account Monitor (4 min): run a cycle in live mode, open the trace, approve the briefing.
+6. Insights chat (2 min): press "Discuss this briefing in chat", then click Novartis and two peers in the Peer explorer and press Compare, and finish with the trap question. Say that the selection is your own interface around the agent.
+7. Trust Lab (3 min): run the evaluation and open a failing case.
 8. Model Bake-off (2 min): drag the quality bar and read the annual cost.
+9. Overview (1 min): close on "Better together".
