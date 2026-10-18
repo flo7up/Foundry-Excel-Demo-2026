@@ -5,7 +5,7 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
-from app import agents, chat, llm, signals, store, workbook
+from app import agents, chat, llm, reports, signals, store, workbook
 from app.main import app
 from tests.test_upload import STD, good_rows, make_xlsx
 
@@ -363,6 +363,8 @@ def test_references_resolve_to_one_row_per_company_in_click_order():
     ("Tell me more", ["NOVN"], "company", {"ticker": "NOVN"}),
 ])
 def test_clicked_companies_become_the_subject_of_a_question_that_names_none(text, refs, intent, args):
+    if intent == "financials" and not reports.doc_for("NOVN"):
+        pytest.skip("the Novartis report PDF is not on this machine (python -m app.reports fetch)")
     got, calls = chat.plan_offline(text, [], refs)
     assert got == intent and calls[0][1] == args
 
@@ -413,7 +415,7 @@ def test_a_live_model_is_told_which_companies_were_selected_without_changing_the
 
 def test_peer_panel_lists_sector_peers_strongest_first_and_counts_the_rest():
     p = chat.peer_panel("NOVN")
-    assert p["company"]["short"] == "Novartis" and p["company"]["has_report"] and p["sector"] == "Health care"
+    assert p["company"]["short"] == "Novartis" and p["company"]["has_report"] == bool(reports.doc_for("NOVN")) and p["sector"] == "Health care"
     scores = [x["score"] for x in p["peers"]]
     assert scores == sorted(scores, reverse=True) and "NOVN" not in {x["ticker"] for x in p["peers"]}
     assert all(x["sector"] == "Health care" and x["has_data"] for x in p["peers"])
@@ -428,7 +430,7 @@ def test_company_list_has_one_entry_per_company_with_every_ticker():
     assert sorted(t for c in companies for t in c["tickers"]) == sorted(r["ticker"] for r in workbook.rows())
     assert [c["company"] for c in companies] == sorted((c["company"] for c in companies), key=str.lower)
     novn = next(c for c in companies if c["ticker"] == "NOVN")
-    assert novn["has_report"] and novn["events"] >= 1 and next(c for c in companies if c["ticker"] == "RO")["tickers"] == ["RO", "ROP"]
+    assert novn["has_report"] == bool(reports.doc_for("NOVN")) and novn["events"] >= 1 and next(c for c in companies if c["ticker"] == "RO")["tickers"] == ["RO", "ROP"]
 
 
 def test_peer_and_reference_endpoints():

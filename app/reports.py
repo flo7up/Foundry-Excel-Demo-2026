@@ -2,6 +2,7 @@
 
 The PDFs are public but copyrighted. They stay in data/reports on this machine and are never changed. Answers quote short passages with the page number.
 
+  python -m app.reports fetch       # download the PDFs listed in manifest.json (a fresh clone has none)
   python -m app.reports build       # read the PDFs, split them into passages, embed them (embedding needs Azure sign-in)
   python -m app.reports extract     # let a model read the headline figures; each one is checked against the page text
   python -m app.reports status
@@ -83,6 +84,34 @@ def source_meta(ref):
     page = f" p.{m.group(2)}" if m.group(2) else ""
     return {"kind": "report", "label": f"{d['company']} · {d['period']} report{page}", "detail": f"{d['title']} · {d['standard']} · period ended {d['period_end']}",
             "url": f"/api/reports/{d['ticker']}/file" + (f"#page={m.group(2)}" if m.group(2) else "")}
+
+
+# ----------------------------------------------------------------------------- download
+
+def fetch():
+    """Downloads the reports that are missing from data/reports. A file is kept only when it is the exact document the figures were checked on."""
+    import urllib.request
+
+    out = {}
+    for d in documents():
+        path = DIR / d["file"]
+        if path.exists():
+            out[d["ticker"]] = "present"
+            continue
+        try:
+            req = urllib.request.Request(d["url"], headers={"User-Agent": "Mozilla/5.0 (Foundry Excel demo; report download)"})
+            with urllib.request.urlopen(req, timeout=60) as r:
+                data = r.read()
+        except Exception as e:  # noqa: BLE001 - one unreachable site must not stop the others
+            out[d["ticker"]] = f"download failed ({type(e).__name__}); get it from {d['url']}"
+            continue
+        if d.get("sha256") and hashlib.sha256(data).hexdigest() != d["sha256"]:
+            out[d["ticker"]] = f"the company now serves a different file ({len(data):,} bytes, expected {d.get('bytes', 0):,}); not saved, so the checked figures stay valid"
+            continue
+        path.write_bytes(data)
+        out[d["ticker"]] = "downloaded"
+    reset_cache()
+    return out
 
 
 # ----------------------------------------------------------------------------- pages and passages
@@ -491,7 +520,10 @@ def status():
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "status"
-    if cmd == "build":
+    if cmd == "fetch":
+        for ticker, result in fetch().items():
+            print(f"{ticker:5} {result}")
+    elif cmd == "build":
         print(build())
     elif cmd == "extract":
         if not llm.live_available():

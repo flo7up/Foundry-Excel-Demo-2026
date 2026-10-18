@@ -41,7 +41,7 @@ def check_files():
     report("ok" if digest == SAMPLE_SHA256 else "warn", "Sample workbook", "unchanged" if digest == SAMPLE_SHA256 else "differs from the version the recordings were made on")
     ds = workbook.sample()
     report("ok" if len(ds.rows) == 50 else "warn", "Workbook parses", f"{len(ds.rows)} securities, {sum(1 for r in ds.rows if r['complete'])} with market data")
-    for pkg in ("fastapi", "uvicorn", "openpyxl", "openai", "azure.identity", "dotenv"):
+    for pkg in ("fastapi", "uvicorn", "openpyxl", "openai", "azure.identity", "dotenv", "pypdf"):
         if importlib.util.find_spec(pkg.split(".")[0]) is None:
             report("fail", f"Package {pkg}", "not installed: pip install -r requirements.txt")
             return
@@ -50,13 +50,15 @@ def check_files():
 def check_reports():
     s = reports.status()
     if not s["available"]:
-        report("warn", "Public reports", "no report PDFs in data/reports; questions about reports will say that none is loaded")
+        report("warn", "Public reports", "no report PDFs in data/reports, so the Public reports page is empty (run: python -m app.reports fetch)")
         return
     bad = [f"{d['ticker']} {k}" for d in reports.documents() if d["available"] for k, it in reports.fin()["companies"].get(d["ticker"], {"items": {}})["items"].items() if not reports.check_item(d["ticker"], it)[0]]
     if bad:
         report("fail", "Public reports", f"stored figures no longer match the PDFs ({', '.join(bad[:4])}); run: python -m app.reports extract")
         return
     detail = f"{s['available']} of {s['documents']} reports, {s['passages']} passages, {s['verified_figures']} figures checked against their pages"
+    if s["available"] < s["documents"]:
+        detail += " (fetch the rest with: python -m app.reports fetch)"
     if not s["embedded"]:
         report("warn", "Public reports", detail + "; no embeddings stored, so search uses keywords only (run: python -m app.reports build)")
     else:
@@ -158,14 +160,17 @@ async def rehearse(live, full):
     step("Upload", time.perf_counter() - t0 + 8, "analysis plus about 8s of on-screen animation (you can skip it)")
 
     mode = "live" if live else "offline"
-    ev, secs = await timed(chat.chat_events("What were Novartis net sales and operating income in H1 2026?", [], None, mode), until=("done", "error"))
-    a = next((e for e in ev if e["type"] == "answer"), None)
-    bad = [] if a and a["checks"]["cited"] and not a["checks"]["ungrounded"] and not a["checks"]["unknown_sources"] else ["the report answer is not grounded and cited"]
-    if a and not any(i.startswith("REP-") for i in a["checks"]["cited"]):
-        bad.append("no report page is cited")
-    step("Reports", secs, f"{mode}, cites {', '.join(a['checks']['cited']) if a else 'nothing'}")
-    if bad:
-        report("fail", "Reports answer", "; ".join(bad))
+    if not reports.doc_for("NOVN"):
+        report("warn", "Rehearsal: Reports", "skipped: the Novartis report is not in data/reports (run: python -m app.reports fetch)")
+    else:
+        ev, secs = await timed(chat.chat_events("What were Novartis net sales and operating income in H1 2026?", [], None, mode), until=("done", "error"))
+        a = next((e for e in ev if e["type"] == "answer"), None)
+        bad = [] if a and a["checks"]["cited"] and not a["checks"]["ungrounded"] and not a["checks"]["unknown_sources"] else ["the report answer is not grounded and cited"]
+        if a and not any(i.startswith("REP-") for i in a["checks"]["cited"]):
+            bad.append("no report page is cited")
+        step("Reports", secs, f"{mode}, cites {', '.join(a['checks']['cited']) if a else 'nothing'}")
+        if bad:
+            report("fail", "Reports answer", "; ".join(bad))
     ev, secs = await timed(agents.run_cycle(mode, None), until=("done", "error"))
     verdict = next((e.get("verdict") for e in ev if e.get("type") == "review"), None)
     tot = next((e["totals"] for e in reversed(ev) if e.get("totals")), None)

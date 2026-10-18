@@ -116,7 +116,7 @@ $python = Get-Command python -ErrorAction SilentlyContinue
 if (-not $python) { throw 'Python was not found. Install Python 3.12 from https://www.python.org/downloads/ and run this script again.' }
 Write-Step "Python: $(& python --version 2>&1)"
 
-& python -c "import fastapi, uvicorn, openpyxl, openai, azure.identity, dotenv" 2>$null
+& python -c "import fastapi, uvicorn, openpyxl, openai, azure.identity, dotenv, pypdf" 2>$null
 if ($LASTEXITCODE -ne 0) {
     Write-Step 'Installing the Python packages (first run only)...'
     & python -m pip install -r (Join-Path $Root 'requirements.txt') --quiet --disable-pip-version-check
@@ -126,6 +126,17 @@ if ($LASTEXITCODE -ne 0) {
 if (-not (Test-Path (Join-Path $Root '.env'))) {
     Copy-Item (Join-Path $Root '.env.example') (Join-Path $Root '.env')
     Write-Step 'Created .env from .env.example (edit it to point at your own Foundry resource).'
+}
+
+# A fresh clone has no report PDFs (they are copyrighted, so they are not in the repository). Download them once.
+$reportsDir = Join-Path $Root 'data\reports'
+if (-not (Get-ChildItem -Path $reportsDir -Filter '*.pdf' -ErrorAction SilentlyContinue)) {
+    Write-Step 'Downloading the five public half-year reports (first run only)...'
+    Push-Location $Root
+    try { & python -m app.reports fetch | ForEach-Object { Write-Host "    $_" } } finally { Pop-Location }
+    if (-not (Get-ChildItem -Path $reportsDir -Filter '*.pdf' -ErrorAction SilentlyContinue)) {
+        Write-Warn 'No report could be downloaded. The demo runs, but the Public reports page stays empty. Retry with: python -m app.reports fetch'
+    }
 }
 
 # ------------------------------------------------------------------ pre-flight
