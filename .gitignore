@@ -7,3 +7,6 @@ __pycache__/
 # Company reports are public but copyrighted and not for redistribution (see data/reports/manifest.json).
 data/reports/*.pdf
 data/reports/index.json
+# Company logos are trademarks of their owners; `python -m app.logos fetch` downloads them on each machine.
+data/logos/*
+!data/logos/manifest.json

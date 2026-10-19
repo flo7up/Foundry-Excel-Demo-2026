@@ -5,6 +5,19 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const pct = (v, d = 1) => (v == null ? '—' : `${v > 0 ? '+' : ''}${v.toFixed(d)}%`);
 const tone = (v) => (v == null ? 'flat' : v > 0.05 ? 'up' : v < -0.05 ? 'down' : 'flat');
 const usd = (v) => (v == null ? '—' : v < 0.01 ? `$${v.toFixed(4)}` : v < 1 ? `$${v.toFixed(3)}` : `$${v.toFixed(2)}`);
+/* Company logo: the downloaded website icon, or the initials on a colour of the ticker when there is none (offline, or an uploaded workbook). */
+const initials = (name) => {
+  const words = String(name ?? '').replace(/ (AG|SA|Ltd\.?|Group|Holding|Inc\.?)\b.*$/i, '').split(/[\s-]+/).filter((w) => /^\p{L}/u.test(w));
+  if (words.length === 1 && /^\p{Lu}{2,4}$/u.test(words[0])) return words[0];
+  return words.slice(0, 2).map((w) => w[0].toUpperCase()).join('') || '?';
+};
+const logo = (ticker, name, cls = '') => {
+  const t = String(ticker ?? ''), hue = [...t].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+  const img = state.logos.has(t) ? `<img src="/api/logos/${encodeURIComponent(t)}" alt="" loading="lazy" onerror="this.parentNode.classList.remove('img');this.remove()">` : '';
+  // The initials are drawn by CSS from data-i, so they never become part of the company name in copied or read text.
+  return `<span class="logo ${img ? 'img' : ''} ${cls}" style="--lh:${hue}" data-i="${esc(initials(name))}" aria-hidden="true">${img}</span>`;
+};
+const loadLogos = async () => { try { state.logos = new Set((await getJSON('/api/logos')).tickers); } catch { state.logos = new Set(); } };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let busyCount = 0;
 const busy = (d) => { busyCount = Math.max(0, busyCount + d); $('#progress')?.classList.toggle('on', busyCount > 0); };
@@ -51,7 +64,7 @@ const ICON = {
 };
 
 const STAGE_TOOLS = { 1: 'Copilot in Excel', 2: 'Cowork', 3: 'Microsoft Foundry' };
-const state = { mode: localStorage.getItem('mode'), status: null, source: null, wb: null, cleanup: null };
+const state = { mode: localStorage.getItem('mode'), status: null, source: null, wb: null, cleanup: null, logos: new Set() };
 
 /* ------------------------------------------------------------------ chrome */
 const PAGES = {
@@ -471,7 +484,7 @@ async function workbookView(el) {
   const maxAbs = Math.max(...ranked.map((r) => Math.abs(r.score)));
   const bar = (r) => {
     const w = (Math.abs(r.score) / maxAbs) * 50;
-    return `<div class="bar-row"><div class="name" title="${esc(r.company)}">${esc(r.company.replace(/ (AG|SA|Ltd\.?|Group|Holding)\b.*$/i, ''))}</div>
+    return `<div class="bar-row"><div class="name" title="${esc(r.company)}">${logo(r.ticker, r.company, 'sm')}${esc(r.company.replace(/ (AG|SA|Ltd\.?|Group|Holding)\b.*$/i, ''))}</div>
       <div class="bar-track"><div class="bar-fill" style="${r.score >= 0 ? `left:50%;background:var(--good)` : `right:50%;background:var(--bad)`};width:0" data-w="${w}"></div></div>
       <div class="val ${tone(r.score)}">${r.score > 0 ? '+' : ''}${r.score.toFixed(1)}</div></div>`;
   };
@@ -504,7 +517,7 @@ async function workbookView(el) {
     more.textContent = showAll ? 'Show fewer' : `Show all ${total} securities`;
     const p = (v) => (v == null ? '<span class="muted">n/a</span>' : `<span class="${tone(v)}">${pct(v)}</span>`);
     $('#tbody').innerHTML = rows.map((r) => `<tr class="${r.complete ? '' : 'nodata'}">
-      <td><b>${esc(r.company)}</b> <span class="muted mono" style="font-size:11px">${esc(r.ticker)}</span></td><td>${esc(r.sector)}</td>
+      <td>${logo(r.ticker, r.company, 'sm')}<b>${esc(r.company)}</b> <span class="muted mono" style="font-size:11px">${esc(r.ticker)}</span></td><td>${esc(r.sector)}</td>
       <td class="num">${r.price ?? '—'}</td><td class="num">${p(r.d1)}</td><td class="num">${p(r.m3)}</td><td class="num">${p(r.m6)}</td><td class="num">${p(r.y1)}</td>
       <td class="num">${r.score == null ? '—' : `<b class="${tone(r.score)}">${r.score.toFixed(1)}</b>`}</td>
       <td><span class="sig ${r.signal.split(' ')[0]}">${esc(r.signal)}</span></td><td><span class="sig ${(r.signal_workbook || '').split(' ')[0]}" style="opacity:.55">${esc(r.signal_workbook || '')}</span></td></tr>`).join('') || `<tr><td colspan="10" class="muted" style="padding:20px">No security matches.</td></tr>`;
@@ -539,7 +552,7 @@ async function reportsView(el) {
     };
     const mg = f?.margins.operating_margin_pct;
     return `<div class="card rep rise">
-      <div class="row spread"><h3>${esc(d.company)}</h3><span class="chip">${esc(d.standard)} · ${esc(d.currency)} m</span></div>
+      <div class="row spread"><h3>${logo(d.ticker, d.company)}${esc(d.company)}</h3><span class="chip">${esc(d.standard)} · ${esc(d.currency)} m</span></div>
       ${f ? `<div class="rep-stats">${stat('revenue', 'Revenue')}${stat('operating_profit', 'Operating profit')}${stat('net_income', 'Net income')}</div>
         ${mg ? `<div class="mrg"><span>Operating margin</span><b>${mg.h1_2026}%</b><em>${mg.h1_2025}% a year earlier</em></div>` : ''}`
         : '<p class="muted" style="margin:12px 0">Figures show when this company is in the loaded workbook.</p>'}
@@ -738,7 +751,7 @@ async function monitorView(el) {
       case 'changes': {
         const row = (c) => `<div class="chg ${c.material ? 'mat' : ''} ${c.ticker === e.focus ? 'focus' : ''}" title="${esc(c.material ? (c.why || c.reasons.join('; ')) : 'Below the materiality threshold')}">
           <span class="sevdot s${c.max_severity}"></span>
-          <div><b>${esc(c.company)}</b> <span class="muted mono" style="font-size:11px">${esc(c.ticker)}</span>${c.ticker === e.focus ? ' <span class="chip accent">briefing</span>' : ''}
+          <div>${logo(c.ticker, c.company, 'sm')}<b>${esc(c.company)}</b> <span class="muted mono" style="font-size:11px">${esc(c.ticker)}</span>${c.ticker === e.focus ? ' <span class="chip accent">briefing</span>' : ''}
             ${c.top ? `<div class="chg-top"><a href="${esc(c.top.url)}" target="_blank" rel="noopener">${esc(c.top.headline)}</a> <span>${esc(c.top.source)} · ${esc(c.top.date)}</span></div>` : ''}</div>
           <span class="chip ${c.material ? 'warn' : ''}">${c.material ? 'material' : 'minor'}</span>
           <span class="delta ${tone(c.price_delta_pct)}">${c.price_delta_pct == null ? 'no price' : pct(c.price_delta_pct)}</span></div>`;
@@ -1008,7 +1021,7 @@ async function bakeView(el) {
   function drawMatrix() {
     if (!tickers.length) { $('#matrix').innerHTML = `<p class="muted">Run the bake-off to see scores.</p>`; return; }
     $('#matrix').innerHTML = `<table class="cmp" style="font-size:12.5px"><tr><th>Company</th>${models.map((m) => `<th style="background:none;font-family:var(--mono)">${esc(m.replace('gpt-', ''))}</th>`).join('')}</tr>
-      ${tickers.map((t) => `<tr><td style="width:auto"><b>${esc(t.company.replace(/ (AG|SA|Ltd\.?|Group|Holding)\b.*$/i, ''))}</b></td>${models.map((m) => {
+      ${tickers.map((t) => `<tr><td style="width:auto">${logo(t.ticker, t.company, 'sm')}<b>${esc(t.company.replace(/ (AG|SA|Ltd\.?|Group|Holding)\b.*$/i, ''))}</b></td>${models.map((m) => {
         const r = runs[m].find((x) => x.ticker === t.ticker);
         return `<td style="background:none">${r ? `<div class="qmini" title="${esc(r.comment)}">${[1, 2, 3, 4, 5].map((n) => `<i class="${r.quality >= n - 0.25 ? 'on' : ''}"></i>`).join('')}</div><span class="muted">${r.quality.toFixed(2)}</span>` : '<span class="muted">…</span>'}</td>`;
       }).join('')}</tr>`).join('')}</table>`;
@@ -1220,7 +1233,7 @@ async function chatView(el) {
     const on = refs.includes(c.ticker);
     const tip = `${c.company} · ${c.has_data ? `momentum ${c.score > 0 ? '+' : ''}${c.score} pts, ${c.signal}` : 'no market data'}${c.has_report ? ' · half-year report loaded' : ''}${c.events ? ` · ${c.events} news or price events` : ''}`;
     return `<button type="button" class="peer ${self ? 'self' : ''} ${on ? 'on' : ''}" data-t="${esc(c.ticker)}" aria-pressed="${on}" title="${esc(tip)}">
-      <span class="sg ${sigClass(c)}"></span><span class="pn">${esc(c.short)}</span>
+      <span class="sg ${sigClass(c)}"></span><span class="pn">${logo(c.ticker, c.company, 'sm')}${esc(c.short)}</span>
       <span class="pbar">${c.has_data ? `<i class="${c.score < 0 ? 'neg' : ''}" style="width:${Math.max(5, Math.abs(c.score) / maxAbs * 100).toFixed(0)}%"></i>` : ''}</span>
       <span class="pdoc">${c.has_report ? ICON.file : ''}</span><span class="pplus">${on ? '✓' : '+'}</span></button>`;
   };
@@ -1421,7 +1434,7 @@ async function planView(el) {
     $('#pl-accs').innerHTML = data.order.map((t) => {
       const a = acc(t), h = a.hypothesis;
       return `<div class="acc ${t === st.focus ? 'on' : ''}" data-t="${esc(t)}" role="button" tabindex="0" aria-pressed="${t === st.focus}">
-        <div class="acc-top"><b>${esc(a.short)}</b><span class="tk">${esc(t)}</span>${data.accounts.length > 1 ? `<button type="button" class="acc-x" data-rm="${esc(t)}" aria-label="Remove ${esc(a.short)}">×</button>` : ''}</div>
+        <div class="acc-top">${logo(t, a.company)}<b>${esc(a.short)}</b><span class="tk">${esc(t)}</span>${data.accounts.length > 1 ? `<button type="button" class="acc-x" data-rm="${esc(t)}" aria-label="Remove ${esc(a.short)}">×</button>` : ''}</div>
         <div class="acc-why">${a.cowork ? `“${esc(a.cowork.why)}”` : '<span class="muted">Added here, no Cowork hypothesis</span>'}</div>
         <div class="acc-foot"><span class="chip ${VERDICT_TONE[h.status] || ''}">${esc(h.status)}</span>
           <span class="days" title="Seller days this quarter"><b>${a.days}</b>d</span></div>
@@ -1450,7 +1463,7 @@ async function planView(el) {
   function drawDash() {
     const a = acc(st.focus);
     if (!a) { $('#pd-body').innerHTML = '<p class="muted">Add an account to start.</p>'; return; }
-    $('#pd-name').innerHTML = `${esc(a.company)} <span class="muted">· ${esc(a.sector)}</span>`;
+    $('#pd-name').innerHTML = `${logo(a.ticker, a.company, 'lg')}${esc(a.company)} <span class="muted">· ${esc(a.sector)}</span>`;
     $('#pd-chips').innerHTML = `<span class="chip accent" title="${esc(a.note)}">Priority ${a.priority} of 10</span><span class="chip">${a.days} seller days</span>${a.has_data ? `<span class="chip">${gl('momentum', 'Momentum')} ${a.momentum_pts > 0 ? '+' : ''}${a.momentum_pts.toFixed(1)}</span>` : '<span class="chip warn">No market data</span>'}`;
     $$('#pd-tabs button').forEach((b) => { const on = b.dataset.v === st.view; b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on)); });
     charts.splice(0).forEach((c) => c.destroy());
@@ -1731,7 +1744,7 @@ async function uploadView(el) {
   const renderReqs = (fields) => {
     $('#reqs').innerHTML = fields.map((f) => `<span class="chip ${f.required ? 'accent' : 'opt'}" title="${esc(f.desc)}">${esc(f.label)}${f.required ? '' : ' (optional)'}</span>`).join('');
   };
-  const applySource = (source, report) => { state.source = source; state.wb = null; renderTop(); renderCurrent(); renderReqs(report.fields); };
+  const applySource = (source, report) => { state.source = source; state.wb = null; loadLogos(); renderTop(); renderCurrent(); renderReqs(report.fields); };
 
   async function send(promise, file) {
     drop.classList.add('busy');
@@ -1983,6 +1996,7 @@ const VIEWS = { overview, upload: uploadView, workbook: workbookView, reports: r
     return;
   }
   state.source = state.status.source;
+  await loadLogos();
   if (!state.mode || (state.mode === 'live' && !state.status.live_available)) state.mode = state.status.live_available ? 'live' : 'offline';
   renderTop();
   route();
