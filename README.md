@@ -1,6 +1,6 @@
 # Foundry Account Intelligence demo
 
-A local web app that turns an Excel workbook of public-market data into a live demonstration of what Microsoft Foundry adds beyond Copilot Studio. It follows the three stages in the sample workbook's "Demo Prompts" sheet: AI helps (Copilot in Excel), AI works with you (Copilot Studio), AI executes (Foundry).
+A local web app that turns an Excel workbook of public-market data into a live demonstration of what Microsoft Foundry adds beyond Copilot Studio. It follows the three stages in the sample workbook's "Demo Prompts" sheet: AI helps (Copilot in Excel), AI works with you (Cowork), AI executes (Foundry). The Overview links stage 2 to the Sales plan page, where the Cowork shortlist is picked up.
 
 ## Start
 

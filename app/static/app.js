@@ -50,12 +50,12 @@ const ICON = {
   plan: I('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/>'),
 };
 
-const STAGE_TOOLS = { 1: 'Copilot in Excel', 2: 'Copilot Studio', 3: 'Microsoft Foundry' };
+const STAGE_TOOLS = { 1: 'Copilot in Excel', 2: 'Cowork', 3: 'Microsoft Foundry' };
 const state = { mode: localStorage.getItem('mode'), status: null, source: null, wb: null, cleanup: null };
 
 /* ------------------------------------------------------------------ chrome */
 const PAGES = {
-  overview: { title: 'From answers to action', sub: 'One workbook, three levels of AI: Excel helps, Copilot Studio assists, Foundry executes.', icon: 'overview', label: 'Overview' },
+  overview: { title: 'From answers to action', sub: 'One workbook, three levels of AI: Excel helps, Cowork works with you, Foundry executes.', icon: 'overview', label: 'Overview' },
   upload: { title: 'Upload your workbook', sub: 'An agent must read and check the data before it acts.', icon: 'upload', label: 'Upload workbook', short: 'Upload' },
   reports: { title: 'Public reports', sub: 'Facts from company filings, each with its page number.', icon: 'reports', label: 'Public reports', short: 'Reports' },
   workbook: { title: 'Workbook insights', sub: 'Stage 1: fast answers from the data, but nobody checks the data.', icon: 'workbook', label: 'Workbook', tag: 'Stage 1' },
@@ -77,7 +77,7 @@ function renderNav() {
 /* Short explanations shown above each page. The text is for people who see the page for the first time. */
 const GUIDE = {
   overview: {
-    what: 'The whole story on one screen: Copilot in Excel helps, Copilot Studio works with you, Microsoft Foundry executes a process.',
+    what: 'The whole story on one screen: Copilot in Excel helps, Cowork works with you, Microsoft Foundry executes a process.',
     try: ['Read the three stages from left to right', 'Hover the dots to see how Copilot Studio and Foundry differ. Open "More differences" for the question "why not only Copilot Studio?"'],
     why: 'Every other page proves one of the differences with a live example.',
   },
@@ -317,7 +317,7 @@ async function overview(el) {
   const pick = (stage, tool) => prompts.find((p) => p.stage.startsWith(stage) && (!tool || p.tool === tool))?.prompt || '';
   const stages = [
     { n: 1, h: 'AI helps', tool: 'Copilot in Excel', ic: 'workbook', line: 'Ask questions about data you already have.', auto: 1, who: 'Every business user', q: pick('1'), href: '#/workbook', cta: 'See the workbook insights' },
-    { n: 2, h: 'AI works with you', tool: 'Copilot Studio', ic: 'human', line: 'Low-code assistants and simple flows.', auto: 2, who: 'Business makers and IT', q: pick('2', 'Copilot Studio Agent'), href: null, cta: 'Shown in Copilot Studio, not in this app' },
+    { n: 2, h: 'AI works with you', tool: 'Cowork', ic: 'human', line: 'Shortlist, hypotheses and a research plan, built with you.', auto: 2, who: 'Every knowledge worker', q: pick('2', 'Cowork'), href: '#/plan', cta: 'See the Cowork hand-off' },
     { n: 3, h: 'AI executes', tool: 'Microsoft Foundry', ic: 'bolt', line: 'Governed agents that run a whole process.', auto: 3, who: 'Developers and AI engineers', q: pick('3'), href: '#/monitor', cta: 'Run the Account Monitor' },
   ];
   // Positions are illustrative: they show where each product sits between two ends, not a score.
