@@ -20,6 +20,7 @@ const skelCards = (n, cls = 'g3') => `<div class="grid ${cls}">${Array.from({ le
 const skeletonFor = (page) => ({
   workbook: `<div class="skel" style="height:64px;margin-bottom:16px"></div>${skelCards(5, 'g5')}<div class="mt">${skelCards(4, 'g4')}</div><div class="mt">${skelCards(2, 'g2')}</div>`,
   chat: `<div class="grid" style="grid-template-columns:1fr 320px"><div class="skel" style="height:520px;border-radius:16px"></div><div class="skel" style="height:520px;border-radius:16px"></div></div>`,
+  plan: `<div class="skel" style="height:120px;border-radius:16px;margin-bottom:16px"></div><div class="grid" style="grid-template-columns:1.4fr 1fr"><div class="skel" style="height:440px;border-radius:16px"></div><div class="skel" style="height:440px;border-radius:16px"></div></div>`,
   upload: `<div class="grid" style="grid-template-columns:1.35fr 1fr"><div class="skel" style="height:300px;border-radius:22px"></div><div class="grid"><div class="skel" style="height:140px;border-radius:16px"></div><div class="skel" style="height:140px;border-radius:16px"></div></div></div>`,
 }[page] || `<div class="skel" style="height:150px;border-radius:22px;margin-bottom:16px"></div>${skelCards(3)}<div class="mt">${skelCards(2, 'g2')}</div>`);
 
@@ -46,19 +47,21 @@ const ICON = {
   send: I('<path d="M4 12l16-8-6 16-3-7z"/>'),
   file: I('<path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/>'),
   reports: I('<path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 12h7M9 15h7M9 18h4"/>'),
+  plan: I('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/>'),
 };
 
-const STAGE_TOOLS = { 1: 'Copilot in Excel', 2: 'Copilot Studio', 3: 'Microsoft Foundry' };
+const STAGE_TOOLS = { 1: 'Copilot in Excel', 2: 'Cowork', 3: 'Microsoft Foundry' };
 const state = { mode: localStorage.getItem('mode'), status: null, source: null, wb: null, cleanup: null };
 
 /* ------------------------------------------------------------------ chrome */
 const PAGES = {
-  overview: { title: 'From answers to action', sub: 'One workbook, three levels of AI: Excel helps, Copilot Studio assists, Foundry executes.', icon: 'overview', label: 'Overview' },
+  overview: { title: 'From answers to action', sub: 'One workbook, three levels of AI: Excel helps, Cowork works with you, Foundry executes.', icon: 'overview', label: 'Overview' },
   upload: { title: 'Upload your workbook', sub: 'An agent must read and check the data before it acts.', icon: 'upload', label: 'Upload workbook', short: 'Upload' },
   reports: { title: 'Public reports', sub: 'Facts from company filings, each with its page number.', icon: 'reports', label: 'Public reports', short: 'Reports' },
   workbook: { title: 'Workbook insights', sub: 'Stage 1: fast answers from the data, but nobody checks the data.', icon: 'workbook', label: 'Workbook', tag: 'Stage 1' },
   monitor: { title: 'Account Monitor', sub: 'Stage 3: four agents run one process, a person decides.', icon: 'monitor', label: 'Account Monitor', short: 'Monitor' },
   chat: { title: 'Insights chat', sub: 'Ask in plain words. Every answer cites its sources and is checked.', icon: 'chat', label: 'Insights chat', short: 'Chat' },
+  plan: { title: 'Sales plan', sub: 'Picks up the Cowork shortlist: test each hypothesis, compare with competitors, position Microsoft.', icon: 'plan', label: 'Sales plan', short: 'Plan' },
   trust: { title: 'Trust Lab', sub: 'Prove an agent is safe before it goes live.', icon: 'trust', label: 'Trust Lab' },
   bakeoff: { title: 'Model Bake-off', sub: 'Pick the cheapest model that is good enough.', icon: 'bake', label: 'Model Bake-off', short: 'Bake-off' },
 };
@@ -66,7 +69,7 @@ const PAGES = {
 function renderNav() {
   const cur = currentPage();
   const item = (k) => `<a href="#/${k}" title="${PAGES[k].label}" class="${cur === k ? 'active' : ''}" ${cur === k ? 'aria-current="page"' : ''}>${ICON[PAGES[k].icon]}<span class="lbl"><span class="long">${PAGES[k].label}</span><span class="short">${PAGES[k].short || PAGES[k].label}</span></span>${PAGES[k].tag ? `<span class="tag">${PAGES[k].tag}</span>` : ''}</a>`;
-  $('#nav').innerHTML = `${item('overview')}${item('upload')}${item('workbook')}${item('reports')}<div class="sep">Stage 3 · Microsoft Foundry</div>${item('monitor')}${item('chat')}${item('trust')}${item('bakeoff')}`;
+  $('#nav').innerHTML = `${item('overview')}${item('upload')}${item('workbook')}${item('reports')}<div class="sep">Stage 3 · Microsoft Foundry</div>${item('monitor')}${item('chat')}${item('plan')}${item('trust')}${item('bakeoff')}`;
   $('#topnav').innerHTML = Object.keys(PAGES).map(item).join('');
   $('#topnav a.active')?.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
@@ -74,7 +77,7 @@ function renderNav() {
 /* Short explanations shown above each page. The text is for people who see the page for the first time. */
 const GUIDE = {
   overview: {
-    what: 'The whole story on one screen: Copilot in Excel helps, Copilot Studio works with you, Microsoft Foundry executes a process.',
+    what: 'The whole story on one screen: Copilot in Excel helps, Cowork works with you, Microsoft Foundry executes a process.',
     try: ['Read the three stages from left to right', 'Hover the dots to see how Copilot Studio and Foundry differ. Open "More differences" for the question "why not only Copilot Studio?"'],
     why: 'Every other page proves one of the differences with a live example.',
   },
@@ -102,6 +105,11 @@ const GUIDE = {
     what: 'Ask about companies, their peers (same sector) and what changed. Click companies in the Peer explorer to attach them to your question. The assistant looks things up in tools before it answers.',
     try: ['Click a peer in the Peer explorer, then "Compare"', 'Click a company code such as NOVN in an answer to attach it too', 'Open "How I got this answer", then try the trap question'],
     why: 'The selection is part of our own interface, which a standard chat canvas does not offer. Answers stay grounded: every figure is checked against the tool results and shown with its source.',
+  },
+  plan: {
+    what: 'The hand-off from Cowork: its shortlist and hypotheses become a sales plan. Each hypothesis is checked against headlines and report figures, each account is compared with its competitors, and the evidence picks the Microsoft play.',
+    try: ['Drag the seller capacity, or ask "We only have 12 seller days. Where should they go?"', 'Open Competitors and click a peer bar to compare it in the chat', 'Ask the assistant to build the plan, then download it'],
+    why: 'Chat and dashboard drive each other on one screen built for this sales motion. A standard chat canvas cannot change a dashboard or keep a plan.',
   },
   trust: {
     what: 'A test bench for the agent. 15 test cases, including traps, are sent to a basic agent and a governed agent. Rules and a judge model grade every answer.',
@@ -168,6 +176,7 @@ const DEMO_STEPS = [
   { page: 'reports', min: 2, wait: 'Search works offline with keywords and live with embeddings.', title: 'Bring in public reports', do: 'Show growth and margin, click a page chip to open the PDF, then search for a topic.', say: 'Prices show what the market did. Reports show what the business did, and every figure has its page.' },
   { page: 'monitor', min: 4, wait: 'A live cycle takes about 20 seconds. Talk through the agents while it runs.', title: 'Stage 3: AI executes', do: 'Press "Run monitoring cycle", open the agent trace, then approve the briefing.', say: 'Four agents, a model chosen for each job, a policy check and a person who decides. Every step is traced.' },
   { page: 'chat', min: 2, wait: 'Each answer takes 3 to 8 seconds live.', title: 'Ask about peers', do: 'Press "Discuss this briefing in chat" under the briefing. Then click Novartis and two peers in the Peer explorer, press "Compare", and finish with the trap question "Should I buy...".', say: 'The peer selection is our own screen, built around the agent. The agent answers from tools, every number has a source, and advice is held back.' },
+  { page: 'plan', min: 3, wait: 'Each answer takes 2 to 6 seconds.', title: 'Turn the shortlist into a plan', do: 'Ask "We only have 12 seller days. Where should they go?", open Competitors for UBS, then press "Build the plan" and download it.', say: 'Cowork gave us three accounts and a hypothesis for each. Here the hypotheses meet the evidence, the competitors and our Microsoft plays, and the chat drives the dashboard. Copilot cannot build this screen.' },
   { page: 'trust', min: 3, wait: 'Live takes about 20 seconds. Explain the test cases while it runs.', title: 'Prove it is safe', do: 'Press "Run evaluation". Click one red cell and the shield cell.', say: 'Before go-live you can show evidence. Failures are useful: they say what to fix.' },
   { page: 'bakeoff', min: 2, wait: 'Live takes about 1 minute: talk through the three models while it runs, or switch to Offline replay (8 seconds).', title: 'Choose the right model', do: 'Press "Run bake-off" and point to the cheapest model above the quality bar.', say: 'Not every job needs the biggest model. Foundry lets you decide with data.' },
   { page: 'overview', min: 1, title: 'Close: better together', do: 'Scroll to "Better together".', say: 'Copilot Studio is the front door for people. Foundry runs the agents that do the work behind it.' },
@@ -308,7 +317,7 @@ async function overview(el) {
   const pick = (stage, tool) => prompts.find((p) => p.stage.startsWith(stage) && (!tool || p.tool === tool))?.prompt || '';
   const stages = [
     { n: 1, h: 'AI helps', tool: 'Copilot in Excel', ic: 'workbook', line: 'Ask questions about data you already have.', auto: 1, who: 'Every business user', q: pick('1'), href: '#/workbook', cta: 'See the workbook insights' },
-    { n: 2, h: 'AI works with you', tool: 'Copilot Studio', ic: 'human', line: 'Low-code assistants and simple flows.', auto: 2, who: 'Business makers and IT', q: pick('2', 'Copilot Studio Agent'), href: null, cta: 'Shown in Copilot Studio, not in this app' },
+    { n: 2, h: 'AI works with you', tool: 'Cowork', ic: 'human', line: 'Shortlist, hypotheses and a research plan, built with you.', auto: 2, who: 'Every knowledge worker', q: pick('2', 'Cowork'), href: '#/plan', cta: 'See the Cowork hand-off' },
     { n: 3, h: 'AI executes', tool: 'Microsoft Foundry', ic: 'bolt', line: 'Governed agents that run a whole process.', auto: 3, who: 'Developers and AI engineers', q: pick('3'), href: '#/monitor', cta: 'Run the Account Monitor' },
   ];
   // Positions are illustrative: they show where each product sits between two ends, not a score.
@@ -1356,6 +1365,333 @@ async function chatView(el) {
   return () => { ctl.abort(); clearTimeout(typer); clearTimeout(presetTimer); document.removeEventListener('modechange', onMode); };
 }
 
+/* ------------------------------------------------------------------ sales plan: picks up the Cowork shortlist */
+const PLAN_TOOL = { ...TOOL_LABEL,
+  get_shortlist: 'shortlist and priorities', get_account: 'account evidence', get_competitors: 'competitor view', get_plays: 'Microsoft plays',
+  get_talk_track: 'talk track facts', show_account: 'update the dashboard', add_to_plan: 'add to the plan', set_seller_days: 'seller capacity',
+};
+const PLAN_OWNERS = ['Account executive', 'Azure specialist', 'Security specialist', 'Data & AI specialist', 'Partner presales'];
+const PLAY_OWNER = { finops: 'Azure specialist', resilience: 'Security specialist', scale: 'Data & AI specialist', integration: 'Azure specialist' };
+const VERDICT_TONE = { 'Evidence found': 'good', 'Mixed evidence': 'warn', Contradicted: 'bad', 'Not in our sources': '', 'No Cowork hypothesis': '' };
+
+async function planView(el) {
+  const saved = (() => { try { return JSON.parse(sessionStorage.getItem('salesPlan') || '{}'); } catch { return {}; } })();
+  const st = { tickers: saved.tickers || [], days: saved.days || 20, focus: saved.focus || null, view: saved.view || 'evidence', items: saved.items || [] };
+  let data = await getJSON(`/api/plan?days=${st.days}${st.tickers.length ? `&tickers=${st.tickers.join(',')}` : ''}`);
+  state.source = data.workbook;
+  st.tickers = data.accounts.map((a) => a.ticker);
+  if (!st.tickers.includes(st.focus)) st.focus = data.order[0] || null;
+  const ctl = new AbortController(), history = [], charts = [];
+  let working = false, comp = null, compToken = 0, typer = null;
+  const save = () => sessionStorage.setItem('salesPlan', JSON.stringify({ tickers: st.tickers, days: st.days, focus: st.focus, view: st.view, items: st.items }));
+  const acc = (t) => data.accounts.find((a) => a.ticker === t);
+  const liveOn = () => state.mode === 'live' && state.status.live_available;
+  const modeText = () => (liveOn() ? `Live · ${state.status.models.assistant}` : 'Offline · rule-based');
+  const known = new Set(data.candidates.flatMap((c) => c.tickers));
+  const flash = (node) => { if (!node) return; node.classList.remove('flash'); void node.offsetWidth; node.classList.add('flash'); };
+
+  el.innerHTML = `
+    <div class="plan-hand rise">
+      <div class="hand-lbl"><span class="from">From Cowork</span><b id="pl-n"></b><small>Hypotheses checked against the evidence</small><span id="pl-addw"></span></div>
+      <div class="acc-row" id="pl-accs"></div>
+      <div class="card cap"><div class="cap-h"><span>Seller capacity</span><b><span id="cap-v">${st.days}</span> days</b></div>
+        <input type="range" id="cap" min="4" max="40" step="1" value="${st.days}" aria-label="Seller days available this quarter">
+        <small>Days follow the evidence, not the share price</small></div>
+    </div>
+    <div class="plan-grid">
+      <div class="card plan-dash rise">
+        <div class="dash-head"><div><h3 id="pd-name"></h3><div class="chip-line" id="pd-chips"></div></div>
+          <div class="seg" id="pd-tabs" role="tablist">${[['evidence', 'Evidence'], ['competitors', 'Competitors'], ['plays', 'Microsoft plays']].map(([k, l]) => `<button role="tab" data-v="${k}">${l}</button>`).join('')}</div></div>
+        <div id="pd-body" aria-live="polite"></div>
+      </div>
+      <div class="card chat plan-chat rise">
+        <div class="chat-head"><span class="avatar" style="width:30px;height:30px;border-radius:10px">${ICON.chat}</span><b>Plan assistant</b>
+          <span class="chip ${liveOn() ? 'good' : ''}" id="pl-mode">${esc(modeText())}</span>
+          <button class="btn ghost sm" id="pl-new" style="margin-left:auto">New chat</button></div>
+        <div class="chat-scroll" id="pl-msgs"></div>
+        <div class="chat-input"><textarea id="pl-q" rows="1" placeholder="Ask, or tell the dashboard what to do…" maxlength="1000"></textarea><button class="btn" id="pl-send">${ICON.send}Send</button></div>
+      </div>
+    </div>
+    <div class="card plan-table rise" id="pl-plan"></div>`;
+
+  /* --------------------------------------------------------------- account cards and capacity */
+  const shortCo = (n) => n.replace(/ (AG|SA|Ltd\.?|Group|Holding|Inc\.?)\b.*$/i, '');
+  function drawAccounts() {
+    const maxDays = Math.max(1, ...data.accounts.map((a) => a.days));
+    $('#pl-accs').innerHTML = data.order.map((t) => {
+      const a = acc(t), h = a.hypothesis;
+      return `<div class="acc ${t === st.focus ? 'on' : ''}" data-t="${esc(t)}" role="button" tabindex="0" aria-pressed="${t === st.focus}">
+        <div class="acc-top"><b>${esc(a.short)}</b><span class="tk">${esc(t)}</span>${data.accounts.length > 1 ? `<button type="button" class="acc-x" data-rm="${esc(t)}" aria-label="Remove ${esc(a.short)}">×</button>` : ''}</div>
+        <div class="acc-why">${a.cowork ? `“${esc(a.cowork.why)}”` : '<span class="muted">Added here, no Cowork hypothesis</span>'}</div>
+        <div class="acc-foot"><span class="chip ${VERDICT_TONE[h.status] || ''}">${esc(h.status)}</span>
+          <span class="days" title="Seller days this quarter"><b>${a.days}</b>d</span></div>
+        <div class="acc-bar" title="Priority ${a.priority} of 10"><i style="width:${(a.days / maxDays) * 100}%"></i></div></div>`;
+    }).join('');
+    $('#pl-addw').innerHTML = data.accounts.length < 5 ? `<select id="pl-add" aria-label="Add an account"><option value="">+ Add an account</option>${data.candidates.filter((c) => !st.tickers.includes(c.ticker)).map((c) => `<option value="${esc(c.ticker)}">${esc(c.short)}</option>`).join('')}</select>` : '';
+    $('#pl-n').textContent = `${data.accounts.length} account${data.accounts.length === 1 ? '' : 's'} to win`;
+  }
+  async function reload(tickers = st.tickers, days = st.days) {
+    data = await getJSON(`/api/plan?days=${days}&tickers=${tickers.join(',')}`);
+    st.tickers = data.accounts.map((a) => a.ticker);
+    if (!st.tickers.includes(st.focus)) st.focus = data.order[0];
+    drawAccounts(); drawDash(); drawPlan(); save();
+  }
+  let capTimer = null;
+  const setDays = (d, fromChat = false) => {
+    st.days = Math.max(4, Math.min(40, d));
+    $('#cap').value = st.days; $('#cap-v').textContent = st.days;
+    clearTimeout(capTimer);
+    capTimer = setTimeout(async () => { await reload(); if (fromChat) { flash($('.cap')); $$('.acc .days').forEach(flash); } }, fromChat ? 0 : 180);
+  };
+  $('#cap').addEventListener('input', (e) => setDays(Number(e.target.value)));
+
+  /* --------------------------------------------------------------- the dashboard for one account */
+  const chip = (id, srcs = data.sources) => srcChip(id, srcs[id]);
+  function drawDash() {
+    const a = acc(st.focus);
+    if (!a) { $('#pd-body').innerHTML = '<p class="muted">Add an account to start.</p>'; return; }
+    $('#pd-name').innerHTML = `${esc(a.company)} <span class="muted">· ${esc(a.sector)}</span>`;
+    $('#pd-chips').innerHTML = `<span class="chip accent" title="${esc(a.note)}">Priority ${a.priority} of 10</span><span class="chip">${a.days} seller days</span>${a.has_data ? `<span class="chip">${gl('momentum', 'Momentum')} ${a.momentum_pts > 0 ? '+' : ''}${a.momentum_pts.toFixed(1)}</span>` : '<span class="chip warn">No market data</span>'}`;
+    $$('#pd-tabs button').forEach((b) => { const on = b.dataset.v === st.view; b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on)); });
+    charts.splice(0).forEach((c) => c.destroy());
+    if (st.view === 'evidence') drawEvidence(a);
+    else if (st.view === 'competitors') drawCompetitors(a);
+    else drawPlays(a);
+  }
+  const item = (i) => `<li class="ev ${i.stance}"><span class="ev-i">${i.stance === 'supports' ? '✓' : '✕'}</span><span class="ev-t">${esc(i.text)}${i.themes ? `<span class="ev-th">${i.themes.map((t) => esc(data.themes[t])).join(' · ')}</span>` : ''}</span>${chip(i.id)}</li>`;
+  /* One row per source: a headline that speaks to two themes shows both tags. */
+  const merged = (list) => [...list.reduce((m, i) => { const k = `${i.id}|${i.stance}`; m.has(k) ? m.get(k).themes.push(i.theme) : m.set(k, { ...i, themes: [i.theme] }); return m; }, new Map()).values()];
+  function drawEvidence(a) {
+    const h = a.hypothesis, p = a.priority_parts;
+    const rows = merged(a.evidence), forIt = rows.filter((i) => i.themes.includes(h.theme)), other = rows.filter((i) => !i.themes.includes(h.theme));
+    const byTheme = [[h.theme ? 'On the hypothesis' : 'Evidence', forIt], ['Other buying triggers', other]].filter(([, l]) => l.length);
+    $('#pd-body').innerHTML = `
+      <div class="hyp ${VERDICT_TONE[h.status] || ''}"><div class="hyp-l">Cowork hypothesis</div>
+        <p>${h.hypothesis ? `“${esc(h.hypothesis)}”` : 'No hypothesis from Cowork for this account.'}</p>
+        <span class="chip ${VERDICT_TONE[h.status] || ''}">${esc(h.status)}${h.theme_label ? ` · ${esc(h.theme_label)}` : ''}</span></div>
+      ${byTheme.length ? byTheme.map(([label, list]) => `<div class="ev-g"><div class="ev-h">${esc(label)}</div><ul class="ev-l">${list.map(item).join('')}</ul></div>`).join('')
+        : '<p class="muted ev-none">No headline or report figure speaks to a buying theme yet. Make the hypothesis the first discovery question.</p>'}
+      ${disc(`How priority ${a.priority} is scored`, `<div class="score-row"><span><b>${p.evidence}</b> evidence</span><span>+</span><span><b>${p.hypothesis}</b> hypothesis</span><span>+</span><span><b>${p.plays}</b> plays</span></div><p class="muted">${esc(a.note)}</p>`, { cls: 'flat' })}`;
+  }
+  async function drawCompetitors(a) {
+    const token = ++compToken;
+    if (!comp || comp.company.ticker !== a.ticker) {
+      $('#pd-body').innerHTML = '<div class="skel" style="height:260px"></div>';
+      try { comp = await getJSON(`/api/plan/competitors?ticker=${encodeURIComponent(a.ticker)}`); } catch { if (token === compToken) $('#pd-body').innerHTML = '<p class="muted">Could not load the competitors.</p>'; return; }
+      if (token !== compToken || st.view !== 'competitors') return;
+    }
+    const c = comp, co = c.company;
+    const rows = [co, ...c.peers].filter((r) => r.momentum_pts != null);
+    $('#pd-body').innerHTML = `
+      <div class="comp">
+        <div class="comp-chart"><div class="comp-cap">${gl('momentum', 'Momentum')} against ${esc(c.sector)} peers <span class="muted">· click a peer to compare in chat</span></div><div style="height:${Math.max(150, rows.length * 30)}px"><canvas id="pl-comp"></canvas></div></div>
+        <div class="comp-side">
+          <div class="kpi-mini"><b>${c.rank_in_sector ? `${c.rank_in_sector}<small>/${c.of_sector}</small>` : '—'}</b><span>rank in sector ${chip(co.ref, c.sources)}</span></div>
+          <div class="kpi-mini"><b class="${tone(co.perf_1y_pct)}">${pct(co.perf_1y_pct)}</b><span>1 year, sector ${pct(c.sector_avg_1y_pct)}</span></div>
+          ${c.financials?.margins?.operating_margin_pct ? `<div class="kpi-mini"><b>${c.financials.margins.operating_margin_pct.h1_2026}%</b><span>operating margin H1 ${chip(c.financials.items[0].ref, c.sources)}</span></div>` : ''}
+        </div>
+      </div>
+      ${angle(c)}
+      <div class="ev-g"><div class="ev-h">What competitors face</div>
+        ${c.shared_themes.length ? `<div class="chip-line">${c.shared_themes.map((s) => `<span class="chip ${s.account_has_it ? 'accent' : ''}" title="${esc(s.peers.join(', '))}">${esc(s.label)}: ${s.peers.length} peer${s.peers.length > 1 ? 's' : ''}${s.account_has_it ? ` and ${esc(shortCo(co.company))}` : ''}</span>`).join('')}</div>` : ''}
+        <ul class="ev-l">${c.peer_news.slice(0, 3).map((n) => `<li class="ev peer"><span class="ev-i">${esc(n.ticker)}</span><span class="ev-t">“${esc(n.headline)}” <span class="muted">${esc(n.source)}, ${esc(n.date)}</span></span>${chip(n.id, c.sources)}</li>`).join('') || '<li class="muted">No peer headlines in the feed.</li>'}</ul></div>`;
+    const ch = new Chart($('#pl-comp'), {
+      type: 'bar',
+      data: { labels: rows.map((r) => shortCo(r.company)), datasets: [{ data: rows.map((r) => r.momentum_pts), backgroundColor: rows.map((r) => (r === co ? '#7c5cff' : r.momentum_pts < 0 ? 'rgba(255,93,115,.55)' : 'rgba(39,180,255,.45)')), borderRadius: 5, barThickness: 16 }] },
+      options: {
+        indexAxis: 'y', maintainAspectRatio: false, animation: { duration: 700 },
+        scales: { x: { grid: { color: 'rgba(255,255,255,.06)' }, ticks: { callback: (v) => `${v}` } }, y: { grid: { display: false }, ticks: { font: { size: 11.5 } } } },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (x) => `Momentum ${x.parsed.x.toFixed(1)} pts · 1Y ${pct(rows[x.dataIndex].perf_1y_pct)}` } } },
+        onClick: (_e, els) => { const r = els[0] && rows[els[0].index]; if (r && r !== co) send(`Compare ${shortCo(co.company)} and ${shortCo(r.company)}`); },
+        onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+      },
+    });
+    charts.push(ch);
+  }
+  /* The competitive angle: a theme the account shares with its peers points to the Microsoft play to lead with. */
+  const angle = (c) => {
+    const s = c.shared_themes.find((x) => x.account_has_it);
+    const play = s && Object.entries(data.plays).find(([, p]) => p.theme === s.theme);
+    if (!play) return '';
+    return `<div class="angle">${ICON.bolt}<span><b>Angle:</b> ${esc(s.label.toLowerCase())} is a sector theme, not only a ${esc(shortCo(c.company.company))} topic. Lead with <button type="button" class="linkbtn" data-goplay="${esc(play[0])}">${esc(play[1].name)}</button>.</span></div>`;
+  };
+  const inPlan = (t, p) => st.items.some((x) => x.ticker === t && x.play === p);
+  function drawPlays(a) {
+    $('#pd-body').innerHTML = a.plays.length ? `<div class="plays">${a.plays.map((p) => `
+      <div class="play" data-p="${esc(p.key)}">
+        <div class="play-h"><b>${esc(p.name)}</b><span class="chip ${p.evidence.length ? (p.from_cowork ? 'good' : 'info') : 'warn'}">${esc(p.fit)}</span>
+          <button type="button" class="btn sm ${inPlan(a.ticker, p.key) ? 'good' : 'ghost'} add-play" data-p="${esc(p.key)}" aria-pressed="${inPlan(a.ticker, p.key)}">${inPlan(a.ticker, p.key) ? '✓ In plan' : '+ Add to plan'}</button></div>
+        <div class="prods">${p.products.map((x) => `<span class="pill sm">${esc(x)}</span>`).join('')}</div>
+        <div class="play-why">${p.evidence.length ? `Why: ${p.evidence.slice(0, 3).map((i) => chip(i.id)).join(' ')}` : '<span class="muted">Rests on the Cowork hypothesis: test it first</span>'}</div>
+        ${disc('Talk track', '<div class="talk" data-load="1"><div class="skel" style="height:90px"></div></div>', { cls: 'flat talk-d' })}
+      </div>`).join('')}</div>` : '<p class="muted">No play fits the evidence yet. Start with discovery.</p>';
+  }
+  async function loadTalk(box, play) {
+    box.dataset.load = '';
+    try {
+      const t = await getJSON(`/api/plan/talk?ticker=${encodeURIComponent(st.focus)}&play=${encodeURIComponent(play)}`);
+      const srcs = { ...data.sources, ...t.sources };
+      box.innerHTML = `<p class="muted">${esc(t.pitch)}</p><ul class="talk-l">
+        ${t.opener ? `<li><em>Open</em>${esc(t.opener.text)} ${chip(t.opener.id, srcs)}</li>` : ''}
+        ${t.peer_angle ? `<li><em>Peers</em>${esc(shortCo(t.peer_angle.company))}: “${esc(t.peer_angle.headline)}” ${chip(t.peer_angle.id, srcs)}</li>` : ''}
+        ${t.questions.map((q) => `<li><em>Ask</em>${esc(q)}</li>`).join('')}
+        <li><em>Show</em><a href="#/${esc(t.proof.page)}">${esc(t.proof.label)}</a></li>
+        <li><em>Meet</em>${esc(t.meeting)}</li></ul>`;
+    } catch { box.innerHTML = '<p class="muted">Could not load the talk track.</p>'; }
+  }
+
+  /* --------------------------------------------------------------- the plan */
+  function addPlay(t, p, fromChat = false) {
+    if (!inPlan(t, p)) st.items.push({ ticker: t, play: p, owner: PLAY_OWNER[p] || PLAN_OWNERS[0], week: Math.min(12, st.items.length + 1) });
+    save(); drawPlan(); syncPlayButtons();
+    if (fromChat) flash($(`#pl-plan tr[data-k="${t}-${p}"]`));
+  }
+  function syncPlayButtons() {
+    $$('.add-play', el).forEach((b) => { const on = inPlan(st.focus, b.dataset.p); b.className = `btn sm ${on ? 'good' : 'ghost'} add-play`; b.setAttribute('aria-pressed', String(on)); b.textContent = on ? '✓ In plan' : '+ Add to plan'; });
+  }
+  function drawPlan() {
+    const rows = st.items.filter((x) => acc(x.ticker) && data.plays[x.play]);
+    const days = (t) => acc(t)?.days ?? 0;
+    $('#pl-plan').innerHTML = `<div class="plan-h"><h3>Sales plan</h3><span class="chip">${rows.length} play${rows.length === 1 ? '' : 's'}</span><span class="chip">${st.days} seller days</span>
+        <button class="btn ghost sm" id="pl-dl" ${rows.length ? '' : 'disabled'} style="margin-left:auto">Download plan</button></div>
+      ${rows.length ? `<div class="tbl-wrap"><table class="tbl plan-tbl"><thead><tr><th>Account</th><th>Microsoft play</th><th>Products</th><th>Owner</th><th>Week</th><th>Days</th><th></th></tr></thead><tbody>
+        ${rows.map((x) => `<tr data-k="${esc(x.ticker)}-${esc(x.play)}"><td><b>${esc(acc(x.ticker).short)}</b></td><td>${esc(data.plays[x.play].name)}</td>
+          <td class="muted">${esc(data.plays[x.play].products.slice(0, 2).join(', '))}</td>
+          <td><select data-own="${esc(x.ticker)}-${esc(x.play)}" aria-label="Owner">${PLAN_OWNERS.map((o) => `<option ${o === x.owner ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></td>
+          <td><select data-wk="${esc(x.ticker)}-${esc(x.play)}" aria-label="Week">${Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}" ${i + 1 === x.week ? 'selected' : ''}>W${i + 1}</option>`).join('')}</select></td>
+          <td>${days(x.ticker)}</td><td><button type="button" class="linkbtn" data-del="${esc(x.ticker)}-${esc(x.play)}" aria-label="Remove">×</button></td></tr>`).join('')}</tbody></table></div>`
+        : '<p class="muted plan-empty">Add plays with + or ask the assistant to build the plan.</p>'}`;
+  }
+  const findItem = (k) => st.items.find((x) => `${x.ticker}-${x.play}` === k);
+  $('#pl-plan').addEventListener('change', (e) => {
+    const o = e.target.dataset.own, w = e.target.dataset.wk;
+    if (o) findItem(o).owner = e.target.value;
+    if (w) findItem(w).week = Number(e.target.value);
+    save();
+  });
+  $('#pl-plan').addEventListener('click', (e) => {
+    const d = e.target.closest('[data-del]');
+    if (d) { st.items = st.items.filter((x) => `${x.ticker}-${x.play}` !== d.dataset.del); save(); drawPlan(); syncPlayButtons(); }
+    if (e.target.closest('#pl-dl')) downloadPlan();
+  });
+  function downloadPlan() {
+    const lines = [`# Sales plan · ${new Date().toLocaleDateString('en-GB')}`, '', `Seller capacity: ${st.days} days this quarter. Accounts from the Cowork shortlist, checked against ${data.workbook.name} (data of ${data.snapshot}), the public news feed and the half-year reports.`, ''];
+    data.order.map(acc).forEach((a) => {
+      lines.push(`## ${a.company} (${a.ticker}): ${a.days} seller days, priority ${a.priority} of 10`, '');
+      if (a.hypothesis.hypothesis) lines.push(`Cowork hypothesis: "${a.hypothesis.hypothesis}" Verdict: ${a.hypothesis.status}.`, '');
+      a.evidence.forEach((i) => lines.push(`- ${i.stance === 'supports' ? 'For' : 'Against'}: ${i.text} [${i.id}]`));
+      const mine = st.items.filter((x) => x.ticker === a.ticker);
+      if (mine.length) lines.push('', '| Play | Products | Owner | Week |', '|---|---|---|---|', ...mine.map((x) => `| ${data.plays[x.play].name} | ${data.plays[x.play].products.join(', ')} | ${x.owner} | W${x.week} |`));
+      lines.push('');
+    });
+    lines.push('Sources: SEC = workbook row, SIG = public news or price feed, REP = company half-year report page. Not investment advice.');
+    const url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/markdown' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = 'sales-plan.md'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  /* --------------------------------------------------------------- interactions */
+  const select = (t, view) => {
+    if (view) st.view = view;
+    if (t && t !== st.focus) { st.focus = t; comp = null; }
+    save(); drawAccounts(); drawDash();
+  };
+  el.addEventListener('click', (e) => {
+    const rm = e.target.closest('[data-rm]'), card = e.target.closest('.acc[data-t]'), tab = e.target.closest('#pd-tabs button'), add = e.target.closest('.add-play');
+    if (e.target.closest('[data-goplay]')) { select(null, 'plays'); return; }
+    if (rm) { e.stopPropagation(); reload(st.tickers.filter((t) => t !== rm.dataset.rm)); return; }
+    if (card) select(card.dataset.t);
+    else if (tab) select(null, tab.dataset.v);
+    else if (add) {
+      if (inPlan(st.focus, add.dataset.p)) { st.items = st.items.filter((x) => !(x.ticker === st.focus && x.play === add.dataset.p)); save(); drawPlan(); syncPlayButtons(); } else addPlay(st.focus, add.dataset.p);
+    }
+    else if (e.target.closest('.sugg')) send(e.target.closest('.sugg').dataset.p);
+  });
+  el.addEventListener('keydown', (e) => { const card = e.target.closest('.acc[data-t]'); if (card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); select(card.dataset.t); } });
+  el.addEventListener('toggle', (e) => { const box = e.target.querySelector?.('.talk[data-load="1"]'); if (e.target.open && box) loadTalk(box, e.target.closest('.play').dataset.p); }, true);
+  el.addEventListener('change', (e) => { if (e.target.id === 'pl-add' && e.target.value) { st.focus = e.target.value; reload([...st.tickers, e.target.value]); } });
+
+  /* --------------------------------------------------------------- the assistant drives the dashboard */
+  const msgs = $('#pl-msgs'), input = $('#pl-q'), sendBtn = $('#pl-send');
+  const scroll = () => { msgs.scrollTop = msgs.scrollHeight; };
+  const addMsg = (cls, html) => { const d = document.createElement('div'); d.className = `msg ${cls}`; d.innerHTML = html; msgs.appendChild(d); scroll(); return d; };
+  const sugg = (x) => `<button class="sugg ${esc(x.kind)}" data-p="${esc(x.prompt)}"><i></i>${esc(x.label)}</button>`;
+  const welcome = () => addMsg('bot', `<div class="avatar">${ICON.chat}</div><div class="bubble"><p><b>I turn the shortlist into a plan.</b> I can change the dashboard for you.</p><div class="chips-row">${data.suggestions.map(sugg).join('')}</div></div>`);
+  welcome();
+  const act = (e) => {
+    if (e.action === 'show') { if (!st.tickers.includes(e.ticker)) { st.focus = e.ticker; st.view = e.view; reload([...st.tickers, e.ticker]); } else select(e.ticker, e.view); flash($('.plan-dash')); }
+    else if (e.action === 'add_play') addPlay(e.ticker, e.play, true);
+    else if (e.action === 'set_days') setDays(e.days, true);
+  };
+  const badges = (c, blocked) => (blocked ? [['bad', 'Held back by the policy check']] : [
+    c.cited.length ? ['good', `${c.cited.length} source${c.cited.length > 1 ? 's' : ''} cited`] : ['', 'No sources needed'],
+    ...(c.figures ? [c.ungrounded.length ? ['warn', `⚠ ${c.ungrounded.length} figure(s) not in the tool results`] : ['good', `✓ ${c.figures} figures match`]] : []),
+    ...(c.unknown_sources.length ? [['warn', `⚠ cites ${c.unknown_sources.join(', ')} without looking it up`]] : []),
+  ]).map(([cl, t]) => `<span class="chip ${cl}">${esc(t)}</span>`).join('');
+  async function send(text) {
+    text = (text || '').trim();
+    if (!text || working) return;
+    working = true; input.disabled = true; sendBtn.disabled = true; sendBtn.innerHTML = '<span class="spin"></span>Working…';
+    $$('.follow', msgs).forEach((x) => x.remove());
+    input.value = ''; input.style.height = 'auto';
+    addMsg('user', `<div class="avatar">You</div><div class="bubble">${esc(text)}</div>`);
+    history.push({ role: 'user', content: text });
+    const shell = addMsg('bot', `<div class="avatar">${ICON.chat}</div><div class="bubble"><div class="steps"></div><div class="working"><span class="dots"><i></i><i></i><i></i></span><span class="wtxt">Reading your question…</span></div><div class="ans"></div></div>`);
+    const stepsEl = $('.steps', shell), wtxt = $('.wtxt', shell);
+    let pending = null, answered = false;
+    try {
+      await streamPost('/api/plan/chat/stream', { message: text, history: history.slice(0, -1).slice(-8), mode: state.mode, focus: st.focus, tickers: st.tickers, days: st.days }, (e) => {
+        if (e.type === 'start') wtxt.textContent = e.mode === 'live' ? `Asking ${e.model}…` : 'Working out what to look at…';
+        else if (e.type === 'tool_call') {
+          wtxt.textContent = `${PLAN_TOOL[e.tool] || e.tool}…`;
+          const c = document.createElement('div');
+          c.className = 'step-chip';
+          c.innerHTML = `<span class="spin"></span><b>${esc(PLAN_TOOL[e.tool] || e.tool)}</b><code>${esc(e.tool)}(${esc(argText(e.args))})</code><span class="sum">working…</span>`;
+          stepsEl.appendChild(c); pending = c; scroll();
+        } else if (e.type === 'tool_result' && pending) {
+          pending.classList.add('done'); $('.spin', pending).outerHTML = '<span class="tick">✓</span>'; $('.sum', pending).textContent = e.summary; pending = null;
+        } else if (e.type === 'action') act(e);
+        else if (e.type === 'warning') toast(e.message);
+        else if (e.type === 'error') { answered = true; $('.working', shell)?.remove(); $('.ans', shell).innerHTML = `<p class="down">${esc(e.message)}</p>`; }
+        else if (e.type === 'answer') { answered = true; finish(shell, e); }
+      }, ctl.signal);
+      if (!answered) $('.ans', shell).innerHTML = '<p class="down">No answer came back. Please try again.</p>';
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      $('.working', shell)?.remove();
+      $('.ans', shell).innerHTML = `<p class="down">Could not reach the server. (${esc(err.message)})</p>`;
+    } finally {
+      if (!ctl.signal.aborted) { working = false; input.disabled = false; sendBtn.disabled = false; sendBtn.innerHTML = `${ICON.send}Send`; }
+    }
+  }
+  function finish(shell, a) {
+    $('.working', shell)?.remove();
+    const stepsEl = $('.steps', shell), bubble = $('.bubble', shell), ans = $('.ans', shell);
+    if (a.steps.length) {
+      const d = document.createElement('details');
+      d.className = 'how';
+      d.innerHTML = `<summary>How I got this answer · ${a.steps.length} step${a.steps.length > 1 ? 's' : ''}${a.actions.length ? ` · ${a.actions.length} change${a.actions.length > 1 ? 's' : ''} on screen` : ''}</summary>`;
+      d.appendChild(stepsEl);
+      bubble.insertBefore(d, ans);
+    } else stepsEl.remove();
+    ans.innerHTML = mdLite(a.text, a.sources, known);
+    const meta = a.live ? `${esc(state.status.models.assistant)} · ${a.tokens_in.toLocaleString()} → ${a.tokens_out.toLocaleString()} tokens · ${usd(a.cost)} · ${a.elapsed}s` : `Offline · rule-based · ${a.elapsed}s`;
+    bubble.insertAdjacentHTML('beforeend', `<div class="badges">${badges(a.checks, a.blocked)}</div><div class="meta-line">${meta}</div>${a.followups?.length ? `<div class="follow"><span class="muted">Ask next</span><div class="chips-row">${a.followups.map((q) => sugg({ kind: 'next', prompt: q, label: q })).join('')}</div></div>` : ''}`);
+    history.push({ role: 'assistant', content: a.text });
+    scroll();
+  }
+  sendBtn.onclick = () => send(input.value);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input.value); } });
+  input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = `${Math.min(120, input.scrollHeight)}px`; });
+  $('#pl-new').onclick = () => { if (working) return; history.length = 0; msgs.innerHTML = ''; welcome(); };
+  const onMode = () => { const m = $('#pl-mode'); if (m) { m.textContent = modeText(); m.className = `chip ${liveOn() ? 'good' : ''}`; } };
+  document.addEventListener('modechange', onMode);
+
+  drawAccounts(); drawDash(); drawPlan(); save();
+  return () => { ctl.abort(); clearTimeout(capTimer); clearTimeout(typer); charts.forEach((c) => c.destroy()); document.removeEventListener('modechange', onMode); };
+}
+
 /* ------------------------------------------------------------------ upload and ingest */
 const SECTOR_COLORS = ['#7c5cff', '#27b4ff', '#2fd69a', '#ffb547', '#ff5d73', '#c77dff', '#4dd0e1', '#a3e635', '#f472b6', '#94a3b8'];
 const STEPS = ['Read file', 'Find data', 'Map columns', 'Extract companies', 'Check quality'];
@@ -1626,7 +1962,7 @@ async function uploadView(el) {
 }
 
 /* ------------------------------------------------------------------ boot */
-const VIEWS = { overview, upload: uploadView, workbook: workbookView, reports: reportsView, monitor: monitorView, chat: chatView, trust: trustView, bakeoff: bakeView };
+const VIEWS = { overview, upload: uploadView, workbook: workbookView, reports: reportsView, monitor: monitorView, chat: chatView, plan: planView, trust: trustView, bakeoff: bakeView };
 
 (async function boot() {
   $('#logo').innerHTML = ICON.logo;

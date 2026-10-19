@@ -1,6 +1,6 @@
 # Foundry Account Intelligence demo
 
-A local web app that turns an Excel workbook of public-market data into a live demonstration of what Microsoft Foundry adds beyond Copilot Studio. It follows the three stages in the sample workbook's "Demo Prompts" sheet: AI helps (Copilot in Excel), AI works with you (Copilot Studio), AI executes (Foundry).
+A local web app that turns an Excel workbook of public-market data into a live demonstration of what Microsoft Foundry adds beyond Copilot Studio. It follows the three stages in the sample workbook's "Demo Prompts" sheet: AI helps (Copilot in Excel), AI works with you (Cowork), AI executes (Foundry). The Overview links stage 2 to the Sales plan page, where the Cowork shortlist is picked up.
 
 ## Start
 
@@ -42,6 +42,7 @@ To run in the current terminal instead, use `.\run.ps1`. If the page is open but
 | Public reports | Half-year reports published by five companies: verified headline figures with page links, growth and margin across companies, and a search over the report text | Data |
 | Account Monitor | Four Foundry agents (Data Steward, Signal Scout, Account Analyst, Compliance Reviewer) and a human approval step, with a live trace of tool calls, tokens and cost. The agents work on real share prices and news headlines | 3 |
 | Insights chat | Chat with the peer and competitor analysis. A peer explorer lets you click companies to attach them to the question. Every answer lists its sources and is checked | 3 |
+| Sales plan | Picks up the Cowork shortlist (UBS, VAT Group, Clariant). Checks each Cowork hypothesis against headlines and report figures, compares each account with its sector peers, maps the buying triggers to Microsoft solution plays and spreads limited seller days by evidence. A plan assistant drives the dashboard, and the plan downloads as Markdown | 3 |
 | Trust Lab | 15 test cases run against a basic agent and a governed agent, scored by rules and a judge model | 3 |
 | Model Bake-off | The same briefing task on three models, with quality, latency and cost, plus an adjustable quality bar | 3 |
 
@@ -65,7 +66,7 @@ Each page shows the main idea first and keeps the detail one click away.
 ## Help for the audience and the presenter
 
 * Dotted terms such as momentum score, signal, public feed, judge model and tokens show a plain-language explanation on hover or focus
-* The Demo guide button opens a 9 step run-book (about 20 minutes) with what to do and what to say, and moves you through the pages with Back and Next
+* The Demo guide button opens a 10 step run-book (about 23 minutes) with what to do and what to say, and moves you through the pages with Back and Next
 * The A+ button enlarges everything for a projector
 * On narrow windows the left rail shrinks to labelled icons and then turns into a tab bar at the top
 * After the Account Monitor produces a briefing, "Discuss this briefing in chat" opens the chat and asks about it
@@ -166,6 +167,18 @@ The peer explorer is the part to show when comparing Foundry with Copilot Studio
 * In live mode the model is told which companies were attached and still has to look everything up and cite it. In offline mode the same selection steers the router
 * Up to five companies can be attached. The browser sends their tickers as `references` with the question
 
+## Sales plan
+
+The third demo in the story: Copilot in Excel finds the three most interesting companies, Cowork turns them into a shortlist with a hypothesis each, and this page turns the shortlist into a sales plan for Microsoft products. It shows what neither Copilot nor Cowork can: one screen built for this sales motion, where the chat and the dashboard drive each other.
+
+* The shortlist and its hypotheses are in `data/cowork_shortlist.json`. Edit the text to match what Cowork produced in your run; `theme` is one of `cost`, `growth`, `portfolio` or `regulation`
+* Evidence: a headline counts when a word rule links it to a theme (for example levy, capital rules or job cuts for cost; demand or sales grow for growth). Report figures add revenue growth and the change in operating margin. Price moves never count: they say nothing about demand for Microsoft products
+* Verdict per hypothesis: Evidence found, Mixed evidence, Contradicted or Not in our sources. With the report PDFs loaded, VAT Group shows Mixed evidence: Q3 sales grew and 2027 is expected above guidance, but H1 2026 net sales fell 8.3%
+* Competitors are the sector peers in the workbook: a momentum chart (click a peer to compare it in the chat), the rank, the 1-year return against the sector, and the themes peers face in the news. A theme the account shares with its peers becomes the angle, for example cost pressure at UBS and Partners Group
+* Microsoft plays come from the partner playbook in `app/salesplan.py`: FinOps for cloud and AI (Cost Management, FinOps toolkit, savings plans, model router in Foundry), Compliance and resilience (Purview, Defender for Cloud, Sentinel, Foundry evaluations), Scale operations with data and AI (Fabric, Dynamics 365 Supply Chain Management, Foundry Agent Service) and Carve-out and data platform (Azure Migrate, Entra ID, Fabric). A play appears when evidence or the Cowork theme supports it. Each has a talk track with an opener from the evidence, a peer angle, discovery questions and a page in this app as proof
+* Priority (0 to 10) = evidence items (up to 4) + hypothesis verdict (3, 1.5 or 0) + plays with evidence (1.5 each, up to 3). Seller days are spread in proportion to priority
+* The plan assistant can change the screen: it moves the seller capacity, opens an account on the right tab and adds plays to the plan. Live mode gives a Foundry model the same tools; offline mode uses a rule-based router. Answers are checked like the chat: sources cited, figures matched, no advice, and no claims about purchase intent
+
 ## Before you go on stage
 
 Run the pre-flight check once on the machine you present from. It needs the app to be started only for the last line.
@@ -249,6 +262,7 @@ The browser tests need Playwright and Chromium (`pip install playwright; playwri
 * Real feed: every security has a real quote series and news, workbook prices match the Yahoo close on the snapshot date, price events match the cached quote, news events are real cached headlines without noise, the headline rules classify what they should, and a small fixed feed gives exactly the expected events
 * Chat references: clicked companies become the subject of a question that names none, a named company wins, whole-workbook questions ignore them, a live model is told about them, and the peer explorer shows peers by momentum
 * Agents: briefings pass the policy checks for every company, and the checks catch advice, invented numbers, bad sources and missing gaps
+* Sales plan: the shortlist exists in the workbook, evidence is real headlines quoted word for word and never price moves, report figures can contradict a hypothesis, seller days add up and follow priority, the router understands the demo questions, the assistant changes the screen, and the browser flow from capacity to downloaded plan works
 * Chat: every tool against the Excel data, routing of 25 question types, guardrails against advice and sales inference, answer verification, follow-up questions, and hostile or unusual input
 * Trust Lab and Model Bake-off: expected answers match the Excel data and the recordings are consistent
 * The Excel file must have the same hash before and after the run
@@ -272,7 +286,7 @@ The Data Steward agent reports these issues, which also make good talking points
 * Roche, Schindler and Lindt appear twice as share classes.
 * The market snapshot is dated 28.08.2026.
 
-## Suggested 20-minute flow
+## Suggested 23-minute flow
 
 This is the order of the Demo guide in the app, which also shows what to say and how long each live run takes.
 
@@ -282,6 +296,7 @@ This is the order of the Demo guide in the app, which also shows what to say and
 4. Public reports (2 min): growth and margin across the five companies, open a figure's PDF page, search for the outlook.
 5. Account Monitor (4 min): run a cycle in live mode, open the trace, approve the briefing.
 6. Insights chat (2 min): press "Discuss this briefing in chat", then click Novartis and two peers in the Peer explorer and press Compare, and finish with the trap question. Say that the selection is your own interface around the agent.
-7. Trust Lab (3 min): run the evaluation and open a failing case.
-8. Model Bake-off (2 min): drag the quality bar and read the annual cost.
-9. Overview (1 min): close on "Better together".
+7. Sales plan (3 min): ask "We only have 12 seller days this quarter. Where should they go?", open Competitors for UBS, open the FinOps talk track, then press "Build the plan" and download it.
+8. Trust Lab (3 min): run the evaluation and open a failing case.
+9. Model Bake-off (2 min): drag the quality bar and read the annual cost.
+10. Overview (1 min): close on "Better together".

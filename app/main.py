@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import agents, bakeoff, chat, evals, feed, llm, reports, signals, store, workbook
+from . import agents, bakeoff, chat, evals, feed, llm, reports, salesplan, signals, store, workbook
 from .config import BAKEOFF_MODELS, MODEL_TIERS, MODELS, PRICES, QUALITY_BAR, RECORDINGS, STATIC, XLSX_PATH
 
 @asynccontextmanager
@@ -132,6 +132,42 @@ def chat_suggestions():
     return {"suggestions": chat.suggestions(), "source": ds.info(), "briefings": store.tickers(),
             "events": len(signals.feed()), "sectors": len({r["sector"] for r in ds.rows}), "tools": len(chat.TOOL_SPECS), "companies": chat.company_list(),
             "reports": sum(1 for d in reports.documents() if d["available"] and reports.doc_for(d["ticker"]))}
+
+
+def _tickers(param):
+    return [t.strip()[:12] for t in (param or "").split(",") if t.strip()][:salesplan.MAX_ACCOUNTS]
+
+
+@app.get("/api/plan")
+def get_plan(tickers: str = "", days: int = salesplan.DEFAULT_DAYS):
+    """The Cowork shortlist with evidence, hypothesis checks, Microsoft plays, priorities and seller days."""
+    return {**salesplan.overview(_tickers(tickers), days), "suggestions": salesplan.suggestions(_tickers(tickers))}
+
+
+@app.get("/api/plan/competitors")
+def get_plan_competitors(ticker: str):
+    res = salesplan.competitors(ticker.strip()[:12])
+    return JSONResponse(res, status_code=404) if "error" in res else res
+
+
+@app.get("/api/plan/talk")
+def get_plan_talk(ticker: str, play: str | None = None):
+    res = salesplan.talk_track(ticker.strip()[:12], play)
+    return JSONResponse(res, status_code=404) if "error" in res else res
+
+
+class PlanChatRequest(BaseModel):
+    message: str
+    history: list[dict] = []
+    mode: str = "offline"
+    focus: str | None = None
+    tickers: list[str] = Field(default_factory=list, max_length=salesplan.MAX_ACCOUNTS)
+    days: int = salesplan.DEFAULT_DAYS
+
+
+@app.post("/api/plan/chat/stream")
+def plan_chat_stream(req: PlanChatRequest):
+    return sse(salesplan.plan_events(req.message, req.history, req.mode, req.focus, req.tickers, req.days))
 
 
 @app.get("/api/reports")
