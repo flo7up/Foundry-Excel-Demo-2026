@@ -229,3 +229,19 @@ def test_a_model_reading_the_alcon_report_gets_the_hand_checked_figures():
     reports.reset_cache()
     got = asyncio.run(reports.extract("ALC"))["items"]
     assert {k: (v["h1_2026"], v["h1_2025"]) for k, v in got.items()} == {"revenue": (5467.0, 5028.0), "operating_profit": (303.0, 715.0), "net_income": (189.0, 526.0)}
+
+
+def test_live_plan_assistant_changes_the_capacity_and_cites_the_shortlist():
+    if not llm.live_available():
+        pytest.skip("no Azure sign-in or endpoint")
+    from app import salesplan
+
+    async def go():
+        return [e async for e in salesplan.plan_events("We only have 12 seller days this quarter. Where should they go?", mode="live")]
+
+    events = asyncio.run(go())
+    a = next(e for e in events if e["type"] == "answer")
+    assert a["live"], "the live call fell back to offline"
+    assert {"action": "set_days", "days": 12} in a["actions"], a["steps"]
+    assert "get_shortlist" in {s["tool"] for s in a["steps"]} and "UBS" in a["text"]
+    assert not a["checks"]["unknown_sources"] and not a["blocked"], a["text"]

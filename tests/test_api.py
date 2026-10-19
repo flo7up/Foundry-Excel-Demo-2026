@@ -132,7 +132,7 @@ def test_every_page_has_a_guide_and_a_short_nav_label():
     guide_block = js[js.index("const GUIDE = {"):js.index("const GLOSSARY")]
     for p in pages:
         assert re.search(rf"^  {p}: \{{\r?\n    what:", guide_block, flags=re.M), f"page {p} has no guide"
-    assert len(pages) == 8
+    assert len(pages) == 9
     for term in re.findall(r"\bgl\('(\w+)'", js):
         assert re.search(rf"^  {term}: '", js[js.index("const GLOSSARY"):], flags=re.M), f"unknown glossary term {term}"
 
@@ -145,7 +145,7 @@ def test_demo_guide_steps_point_to_real_pages_and_warn_about_slow_live_runs():
     block = js[js.index("const DEMO_STEPS = ["):js.index("function renderDrawer")]
     pages = set(re.findall(r"^  (\w+): \{ title:", js, flags=re.M))
     steps = re.findall(r"\{ page: '(\w+)', min: (\d+)(?:, wait: '([^']*)')?", block)
-    assert len(steps) == 9 and {p for p, _m, _w in steps} <= pages
+    assert len(steps) == 10 and {p for p, _m, _w in steps} <= pages
     slow = {p: w for p, _m, w in steps if w}
     for page in ("trust", "bakeoff", "monitor"):
         assert page in slow and re.search(r"second|minute", slow[page]), f"{page} needs a timing hint"

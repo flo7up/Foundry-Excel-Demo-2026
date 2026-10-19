@@ -19,9 +19,9 @@ from playwright.sync_api import sync_playwright  # noqa: E402
 
 pytestmark = pytest.mark.ui
 
-PAGES = ["overview", "upload", "workbook", "reports", "monitor", "chat", "trust", "bakeoff"]
+PAGES = ["overview", "upload", "workbook", "reports", "monitor", "chat", "plan", "trust", "bakeoff"]
 # Words a first-time viewer sees on arrival. Measured values are 20 to 30 percent below these limits.
-WORD_BUDGET = {"overview": 300, "upload": 350, "workbook": 480, "reports": 340, "monitor": 340, "chat": 150, "trust": 200, "bakeoff": 180}
+WORD_BUDGET = {"overview": 300, "upload": 350, "workbook": 480, "reports": 340, "monitor": 340, "chat": 150, "plan": 300, "trust": 200, "bakeoff": 180}
 
 
 @pytest.fixture(scope="module")
@@ -323,7 +323,7 @@ def test_bakeoff_recommendation_is_three_numbers_with_the_reason_behind_a_click(
 def test_the_demo_guide_and_the_zoom_button_still_work(open_page):
     page = open_page("overview")
     page.click("#guide-btn")
-    assert page.locator("#dg").is_visible() and page.locator(".dstep").count() == 9
+    assert page.locator("#dg").is_visible() and page.locator(".dstep").count() == 10
     page.keyboard.press("Escape")
     assert not page.locator("#dg").is_visible()
     page.click("#zoom-btn")
@@ -370,3 +370,60 @@ def test_monitor_briefing_shows_report_facts_with_clickable_pages(open_page):
     page.wait_for_selector("#appr button", timeout=60000)
     assert page.locator(".brief .fact a.src.report").count() == 2
     assert "6/6 checks passed" in page.inner_text("#results")
+
+
+def ask_plan(page, text):
+    page.fill("#pl-q", text)
+    page.press("#pl-q", "Enter")
+    page.wait_for_function("!document.querySelector('#pl-send').disabled && document.querySelectorAll('#pl-msgs .badges').length > 0", timeout=20000)
+    page.wait_for_timeout(500)
+
+
+def test_plan_page_starts_with_the_cowork_shortlist_and_checks_the_hypothesis(open_page):
+    page = open_page("plan")
+    page.evaluate("sessionStorage.removeItem('salesPlan')")
+    page.reload()
+    page.wait_for_selector(".acc[data-t]")
+    assert page.eval_on_selector_all(".acc[data-t]", "els => els.map(e => e.dataset.t)") == ["UBSG", "VACN", "CLN"]
+    assert "Run-rate efficiency programme" in page.inner_text(".acc.on")
+    assert "Evidence found" in page.inner_text(".hyp") and page.locator(".ev.supports .src.news").count() >= 2
+    assert sum(int(x) for x in page.eval_on_selector_all(".acc .days b", "els => els.map(e => e.textContent)")) == 20
+    assert not page.errors
+
+
+def test_the_plan_assistant_drives_the_dashboard(open_page):
+    page = open_page("plan")
+    page.evaluate("sessionStorage.removeItem('salesPlan')")
+    page.reload()
+    page.wait_for_selector(".acc[data-t]")
+    ask_plan(page, "We only have 12 seller days this quarter. Where should they go?")
+    page.wait_for_function("document.querySelector('#cap-v').textContent === '12'")
+    page.wait_for_timeout(600)
+    assert sum(int(x) for x in page.eval_on_selector_all(".acc .days b", "els => els.map(e => e.textContent)")) == 12
+    ask_plan(page, "How does Clariant compare with its competitors?")
+    page.wait_for_selector("#pl-comp")
+    assert page.get_attribute(".acc.on", "data-t") == "CLN" and "Clariant" in page.inner_text("#pd-name")
+    assert page.get_attribute("#pd-tabs button.on", "data-v") == "competitors"
+    ask_plan(page, "Build the sales plan for all three accounts")
+    assert page.locator(".plan-tbl tbody tr").count() == 3 and page.is_enabled("#pl-dl")
+    with page.expect_download() as dl:
+        page.click("#pl-dl")
+    text = open(dl.value.path(), encoding="utf-8").read()
+    assert "FinOps for cloud and AI" in text and "[SIG-046]" in text and "12 days" in text
+    assert not page.errors
+
+
+def test_plays_can_be_added_by_hand_and_open_a_talk_track(open_page):
+    page = open_page("plan")
+    page.evaluate("sessionStorage.removeItem('salesPlan')")
+    page.reload()
+    page.click("#pd-tabs button[data-v=plays]")
+    page.click(".play[data-p=finops] .add-play")
+    assert page.inner_text(".play[data-p=finops] .add-play") == "✓ In plan" and page.locator(".plan-tbl tbody tr").count() == 1
+    page.click(".play[data-p=finops] .talk-d summary")
+    page.wait_for_selector(".play[data-p=finops] .talk-l")
+    talk = page.inner_text(".play[data-p=finops] .talk-l")
+    assert "Swiss Lawmakers Support Levy" in talk and "Model Bake-off" in talk
+    page.click(".plan-tbl [data-del]")
+    assert page.inner_text(".play[data-p=finops] .add-play") == "+ Add to plan"
+    assert not page.errors

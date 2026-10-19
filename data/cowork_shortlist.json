@@ -1,0 +1,24 @@
+{
+  "source": "Cowork shortlist (demo 2)",
+  "note": "The accounts and hypotheses that Cowork hands over. Edit them to match what Cowork produced in your run. theme is one of cost, growth, portfolio, regulation.",
+  "accounts": [
+    {
+      "ticker": "UBSG",
+      "why": "Run-rate efficiency programme",
+      "hypothesis": "Cost efficiency is a board priority, so every IT and AI investment has to show savings.",
+      "theme": "cost"
+    },
+    {
+      "ticker": "VACN",
+      "why": "Strong demand for its products",
+      "hypothesis": "Demand from chip makers building AI capacity is rising faster than operations can scale.",
+      "theme": "growth"
+    },
+    {
+      "ticker": "CLN",
+      "why": "Portfolio reshaping and margin focus",
+      "hypothesis": "After selling Stahl, Clariant is reshaping its portfolio and needs a leaner operating model.",
+      "theme": "portfolio"
+    }
+  ]
+}
