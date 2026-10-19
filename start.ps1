@@ -139,6 +139,14 @@ if (-not (Get-ChildItem -Path $reportsDir -Filter '*.pdf' -ErrorAction SilentlyC
     }
 }
 
+# Company logos are trademarks, so they are not in the repository either. Download them once; a company without one shows its initials.
+$logosDir = Join-Path $Root 'data\logos'
+if (-not (Get-ChildItem -Path $logosDir -Exclude 'manifest.json' -File -ErrorAction SilentlyContinue)) {
+    Write-Step 'Downloading the company logos (first run only)...'
+    Push-Location $Root
+    try { & python -m app.logos fetch | Select-Object -Last 1 | ForEach-Object { Write-Host "    $_" } } finally { Pop-Location }
+}
+
 # ------------------------------------------------------------------ pre-flight
 if ($Check -or $Rehearse) {
     $preflight = @('-m', 'app.preflight', '--url', $Url)

@@ -427,3 +427,15 @@ def test_plays_can_be_added_by_hand_and_open_a_talk_track(open_page):
     page.click(".plan-tbl [data-del]")
     assert page.inner_text(".play[data-p=finops] .add-play") == "+ Add to plan"
     assert not page.errors
+
+
+def test_company_names_carry_a_logo_or_initials_and_never_a_broken_image(open_page):
+    page = open_page("plan")
+    cards = page.locator(".acc .logo")
+    assert cards.count() == 3 and page.locator("#pd-name .logo").count() == 1
+    assert [c.get_attribute("data-i") for c in cards.all()] == ["UBS", "VAT", "C"], "the initials are there underneath, shown when no logo was downloaded"
+    broken = page.evaluate("[...document.querySelectorAll('.logo img')].filter((i) => i.complete && !i.naturalWidth).length")
+    assert broken == 0
+    assert "Clariant" in page.inner_text(".acc[data-t='CLN']") and not page.inner_text(".acc[data-t='CLN']").startswith("C\n"), "the initials are not part of the text"
+    page = open_page("workbook")
+    assert page.locator("#tbody tr .logo").count() >= 10 and page.locator("#top .logo").count() == 7

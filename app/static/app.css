@@ -947,3 +947,15 @@ tr.flash td { animation: rowflash 1.6s ease; }
 @media (max-width: 760px) { .plan-hand { grid-template-columns: 1fr; } .hand-lbl { flex-wrap: wrap; } .comp { grid-template-columns: 1fr; } .comp-side { flex-direction: row; flex-wrap: wrap; } .tbl-wrap { overflow-x: auto; } }
 .angle { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-radius: 12px; margin-bottom: 14px; font-size: 13px; background: rgba(255, 181, 71, 0.08); border: 1px solid rgba(255, 181, 71, 0.3); }
 .angle svg { width: 16px; height: 16px; color: var(--warn); flex: none; margin-top: 2px; } .angle .linkbtn { font-size: 13px; color: var(--text); padding: 0; }
+
+/* Company logos: the website icon on a white tile, or the initials on a colour of the ticker */
+.logo { --sz: 22px; position: relative; display: inline-grid; place-items: center; flex: none; width: var(--sz); height: var(--sz); margin-right: 8px; vertical-align: middle; border-radius: calc(var(--sz) * 0.28); overflow: hidden;
+  background: hsl(var(--lh) 42% 30%); color: hsl(var(--lh) 70% 88%); font-size: calc(var(--sz) * 0.4); font-weight: 700; letter-spacing: -0.02em; line-height: 1; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
+.logo.sm { --sz: 18px; margin-right: 7px; }
+.logo.lg { --sz: 30px; margin-right: 10px; }
+.logo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 12%; box-sizing: border-box; background: #fff; }
+.logo::before { content: attr(data-i); }
+.logo.img::before { content: none; }
+.acc-top { align-items: center; } .acc-top .logo { margin-right: 0; }
+.dash-head h3 { display: flex; align-items: center; flex-wrap: wrap; column-gap: 6px; } .dash-head h3 .logo { margin-right: 4px; }
+.rep h3 { display: flex; align-items: center; }

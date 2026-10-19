@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import agents, bakeoff, chat, evals, feed, llm, reports, salesplan, signals, store, workbook
+from . import agents, bakeoff, chat, evals, feed, llm, logos, reports, salesplan, signals, store, workbook
 from .config import BAKEOFF_MODELS, MODEL_TIERS, MODELS, PRICES, QUALITY_BAR, RECORDINGS, STATIC, XLSX_PATH
 
 @asynccontextmanager
@@ -196,6 +196,22 @@ def report_file(ticker: str):
         return JSONResponse({"error": "No such report."}, status_code=404)
     filename = doc["file"]
     return FileResponse(reports.DIR / filename, media_type="application/pdf", headers={"Content-Disposition": f'inline; filename="{filename}"', "Cache-Control": "no-cache"})
+
+
+@app.get("/api/logos")
+def get_logos():
+    """Tickers of the loaded workbook that have a downloaded logo. The others show their initials."""
+    return {"tickers": logos.available(), "status": logos.status()}
+
+
+@app.get("/api/logos/{ticker}")
+def logo_file(ticker: str):
+    entry = logos.entry_for(ticker)
+    path = logos.file_for(entry) if entry else None
+    if not path:
+        return JSONResponse({"error": "No logo for this company."}, status_code=404)
+    # An SVG opened on its own must not run scripts on the app's origin.
+    return FileResponse(path, media_type=logos.TYPES[path.suffix], headers={"Cache-Control": "max-age=86400", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'", "X-Content-Type-Options": "nosniff"})
 
 
 @app.get("/api/trustlab/cases")

@@ -10,13 +10,14 @@ You need Python 3.12 and, for live mode, an Azure sign-in (`az login`).
 .\start.ps1
 ```
 
-One command opens the server in its own terminal window, so your current terminal stays free. The script checks Python and the packages (and installs them on the first run), creates `.env` if it is missing, downloads the five public reports on the first run (see Public reports), waits until the app answers, reports whether live mode is available and opens the browser at <http://127.0.0.1:8765>.
+One command opens the server in its own terminal window, so your current terminal stays free. The script checks Python and the packages (and installs them on the first run), creates `.env` if it is missing, downloads the five public reports and the company logos on the first run (see Public reports and Company logos), waits until the app answers, reports whether live mode is available and opens the browser at <http://127.0.0.1:8765>.
 
 On a fresh clone without PowerShell, run the same first steps by hand:
 
 ```powershell
 python -m pip install -r requirements.txt
 python -m app.reports fetch       # the report PDFs are not in the repository
+python -m app.logos fetch         # nor are the company logos
 python -m uvicorn app.main:app --port 8765
 ```
 
@@ -110,6 +111,12 @@ Limits to mention when presenting:
 * The keyword rules sometimes misread a headline (an analyst note about an outlook is not company guidance). In production a model would classify the headlines
 * Google News and Yahoo Finance are free public sources without a service agreement. A production system would use a licensed market data and news feed
 * The feed covers the companies in the SMI Expanded list. Other tickers get no events
+
+## Company logos
+
+Company names on the Workbook, Public reports, Account Monitor, Insights chat, Sales plan and Model Bake-off pages show the company's logo: the icon of its own website, on a small white tile.
+
+The logos are trademarks of their owners, so like the report PDFs they are not in the repository. `data/logos/manifest.json` lists each company's website; `python -m app.logos fetch` downloads the icons into `data/logos` once (`start.ps1` does this on the first start) and keeps a reply only when it is an image of at least 32 pixels. It tries a few public icon services in turn. A company without a logo (no download yet, no internet, or a company from an uploaded workbook) shows its initials on a colour of its own, so the page never shows a broken image. `--force` downloads them again.
 
 ## Public reports
 
