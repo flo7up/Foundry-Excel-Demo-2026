@@ -19,9 +19,9 @@ from playwright.sync_api import sync_playwright  # noqa: E402
 
 pytestmark = pytest.mark.ui
 
-PAGES = ["overview", "upload", "workbook", "reports", "monitor", "chat", "plan", "trust", "bakeoff"]
+PAGES = ["overview", "upload", "workbook", "reports", "autorun", "monitor", "chat", "plan", "trust", "bakeoff"]
 # Words a first-time viewer sees on arrival. Measured values are 20 to 30 percent below these limits.
-WORD_BUDGET = {"overview": 300, "upload": 350, "workbook": 480, "reports": 340, "monitor": 340, "chat": 150, "plan": 300, "trust": 200, "bakeoff": 180}
+WORD_BUDGET = {"overview": 300, "upload": 350, "workbook": 480, "reports": 340, "autorun": 380, "monitor": 340, "chat": 150, "plan": 300, "trust": 200, "bakeoff": 180}
 
 
 @pytest.fixture(scope="module")
@@ -323,7 +323,7 @@ def test_bakeoff_recommendation_is_three_numbers_with_the_reason_behind_a_click(
 def test_the_demo_guide_and_the_zoom_button_still_work(open_page):
     page = open_page("overview")
     page.click("#guide-btn")
-    assert page.locator("#dg").is_visible() and page.locator(".dstep").count() == 10
+    assert page.locator("#dg").is_visible() and page.locator(".dstep").count() == 11
     page.keyboard.press("Escape")
     assert not page.locator("#dg").is_visible()
     page.click("#zoom-btn")

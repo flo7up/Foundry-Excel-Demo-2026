@@ -41,6 +41,7 @@ To run in the current terminal instead, use `.\run.ps1`. If the page is open but
 | Upload workbook | Drop an Excel file and watch the app read it: sheet found, columns mapped to app fields, companies extracted, data checked | Setup |
 | Workbook | KPIs, sector momentum, rankings and data-quality findings computed from the loaded file | 1 |
 | Public reports | Half-year reports published by five companies: verified headline figures with page links, growth and margin across companies, and a search over the report text | Data |
+| Account run | The business question for every account: what is happening in its industry, which of our past cases fit and what to offer. Four agents run the same process for all 47 companies, by hand or on a schedule (Autopilot), and only exceptions reach a person | 3 |
 | Account Monitor | Four Foundry agents (Data Steward, Signal Scout, Account Analyst, Compliance Reviewer) and a human approval step, with a live trace of tool calls, tokens and cost. The agents work on real share prices and news headlines | 3 |
 | Insights chat | Chat with the peer and competitor analysis. A peer explorer lets you click companies to attach them to the question. Every answer lists its sources and is checked | 3 |
 | Sales plan | Picks up the Cowork shortlist (UBS, VAT Group, Clariant). Checks each Cowork hypothesis against headlines and report figures, compares each account with its sector peers, maps the buying triggers to Microsoft solution plays and spreads limited seller days by evidence. A plan assistant drives the dashboard, and the plan downloads as Markdown | 3 |
@@ -67,7 +68,7 @@ Each page shows the main idea first and keeps the detail one click away.
 ## Help for the audience and the presenter
 
 * Dotted terms such as momentum score, signal, public feed, judge model and tokens show a plain-language explanation on hover or focus
-* The Demo guide button opens a 10 step run-book (about 23 minutes) with what to do and what to say, and moves you through the pages with Back and Next
+* The Demo guide button opens an 11 step run-book (about 26 minutes) with what to do and what to say, and moves you through the pages with Back and Next
 * The A+ button enlarges everything for a projector
 * On narrow windows the left rail shrinks to labelled icons and then turns into a tab bar at the top
 * After the Account Monitor produces a briefing, "Discuss this briefing in chat" opens the chat and asks about it
@@ -174,6 +175,18 @@ The peer explorer is the part to show when comparing Foundry with Copilot Studio
 * In live mode the model is told which companies were attached and still has to look everything up and cite it. In offline mode the same selection steers the router
 * Up to five companies can be attached. The browser sends their tickers as `references` with the question
 
+## Account run and Autopilot
+
+Demo 3 as an autonomous process: "For every account on our list: what is happening in their industry, which of our past cases fit, and what should we offer?" Nobody asks a question on this page. The process runs for every company in the workbook and decides by itself what it can finish and what needs a person.
+
+* Industry Scout: groups the real news feed by sector and names the buying themes (cost pressure, regulation, demand growth, portfolio change), with the same word rules as the Sales plan
+* Case Matcher: picks up to two reference cases from `data/past_cases.json` for the same need, the same industry first. The 16 cases are synthetic demo data; replace them with your own won deals
+* Offer Writer: the Microsoft play from the Sales plan playbook. The account's own evidence wins; otherwise the strongest theme in its industry; otherwise no offer
+* Compliance Reviewer: six checks (data complete, cited source, fitting case, no conflicting evidence, no sensitive headline such as a lawsuit or fine, no investment advice). The result goes to one of four places: sent to the account team (own evidence and a case), added to the industry campaign (industry signal only), Needs you (missing data, conflicting evidence, a sensitive headline or a strategic account from the Cowork shortlist) or no trigger yet (checked again next run)
+* With the sample workbook an offline run takes about 9 seconds: 6 accounts to the account team, 23 to industry campaigns, 11 for a person, 7 without a trigger
+* Autopilot: the switch on the page sets a schedule (every 2 minutes for the demo, daily at 07:00 or Mondays at 07:00). Runs happen on the server in their own thread, also when the page is closed. While Autopilot is on, the menu shows an Auto badge and the top bar shows the countdown to the next run on every page. Every run is in the run history with who started it
+* Live mode lets the scout model write the one-sentence summary per industry; the rest of the process is rules, so a run costs a few cents at most. The schedule and run history live in memory and reset when the server restarts
+
 ## Sales plan
 
 The third demo in the story: Copilot in Excel finds the three most interesting companies, Cowork turns them into a shortlist with a hypothesis each, and this page turns the shortlist into a sales plan for Microsoft products. It shows what neither Copilot nor Cowork can: one screen built for this sales motion, where the chat and the dashboard drive each other.
@@ -278,7 +291,7 @@ The browser tests need Playwright and Chromium (`pip install playwright; playwri
 
 * The sample data is read from `data/Verkaufszahlen_Demo_SMI_Expanded.xlsx` and is never modified.
 * The report figures come from the companies' own published half-year reports (see Public reports). The workbook itself has no revenue or earnings data.
-* The monitoring events are real share prices and news headlines downloaded from public sources (see Real market data). The example workbooks are cut from the real file. No data in the app is invented.
+* The monitoring events are real share prices and news headlines downloaded from public sources (see Real market data). The example workbooks are cut from the real file. No data in the app is invented, except the past cases in `data/past_cases.json`, which are marked as synthetic.
 * Free public sources are fine for a demo. For production use a licensed market data and news feed, or Foundry web search or an MCP server, and let a model classify the headlines.
 * The agents run in this local app and use Foundry for the models and content safety. In production they would be hosted in Foundry's agent service.
 * The approval step logs a decision in memory only. No message is sent.
@@ -293,7 +306,7 @@ The Data Steward agent reports these issues, which also make good talking points
 * Roche, Schindler and Lindt appear twice as share classes.
 * The market snapshot is dated 28.08.2026.
 
-## Suggested 23-minute flow
+## Suggested 26-minute flow
 
 This is the order of the Demo guide in the app, which also shows what to say and how long each live run takes.
 
@@ -301,9 +314,10 @@ This is the order of the Demo guide in the app, which also shows what to say and
 2. Upload workbook (2 min): use the sample workbook and narrate the mapping and the quality findings.
 3. Workbook (2 min): the KPIs, the sector chart and the "same data, two answers" panel.
 4. Public reports (2 min): growth and margin across the five companies, open a figure's PDF page, search for the outlook.
-5. Account Monitor (4 min): run a cycle in live mode, open the trace, approve the briefing.
-6. Insights chat (2 min): press "Discuss this briefing in chat", then click Novartis and two peers in the Peer explorer and press Compare, and finish with the trap question. Say that the selection is your own interface around the agent.
-7. Sales plan (3 min): ask "We only have 12 seller days this quarter. Where should they go?", open Competitors for UBS, open the FinOps talk track, then press "Build the plan" and download it.
-8. Trust Lab (3 min): run the evaluation and open a failing case.
-9. Model Bake-off (2 min): drag the quality bar and read the annual cost.
-10. Overview (1 min): close on "Better together".
+5. Account run (3 min): press "Run now", click UBS in the grid for its three answers, then switch on Autopilot and point to the Auto badge in the menu and the countdown in the top bar.
+6. Account Monitor (4 min): run a cycle in live mode, open the trace, approve the briefing.
+7. Insights chat (2 min): press "Discuss this briefing in chat", then click Novartis and two peers in the Peer explorer and press Compare, and finish with the trap question. Say that the selection is your own interface around the agent.
+8. Sales plan (3 min): ask "We only have 12 seller days this quarter. Where should they go?", open Competitors for UBS, open the FinOps talk track, then press "Build the plan" and download it.
+9. Trust Lab (3 min): run the evaluation and open a failing case.
+10. Model Bake-off (2 min): drag the quality bar and read the annual cost.
+11. Overview (1 min): close on "Better together".
