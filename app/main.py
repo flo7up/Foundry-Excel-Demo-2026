@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import agents, bakeoff, chat, evals, feed, llm, logos, reports, salesplan, signals, store, workbook
+from . import agents, autorun, bakeoff, chat, evals, feed, llm, logos, reports, salesplan, signals, store, workbook
 from .config import BAKEOFF_MODELS, MODEL_TIERS, MODELS, PRICES, QUALITY_BAR, RECORDINGS, STATIC, XLSX_PATH
 
 @asynccontextmanager
@@ -222,6 +222,43 @@ def trustlab_cases():
 @app.get("/api/monitor/stream")
 def monitor_stream(mode: str = "offline", focus: str | None = None):
     return sse(agents.run_cycle(mode, focus))
+
+
+@app.get("/api/autorun")
+def get_autorun():
+    """The account run: schedule, the run in progress, run history, the agents and where results go."""
+    return autorun.status()
+
+
+class AutorunRequest(BaseModel):
+    mode: str = "offline"
+
+
+@app.post("/api/autorun/run")
+def start_autorun(req: AutorunRequest):
+    run, started = autorun.start(req.mode, "manual", "You")
+    return {"run": run.summary(), "started": started}
+
+
+@app.get("/api/autorun/stream")
+def autorun_stream(run: str):
+    return sse(autorun.follow(run.strip()[:20]))
+
+
+class ScheduleRequest(BaseModel):
+    enabled: bool
+    cadence: str = "demo"
+    mode: str = "offline"
+
+
+@app.post("/api/autorun/schedule")
+def set_autorun_schedule(req: ScheduleRequest):
+    return autorun.set_schedule(req.enabled, req.cadence, req.mode)
+
+
+@app.get("/api/autorun/cases")
+def get_autorun_cases():
+    return autorun.case_file()
 
 
 @app.get("/api/trustlab/stream")

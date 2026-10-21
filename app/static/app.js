@@ -61,6 +61,10 @@ const ICON = {
   file: I('<path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/>'),
   reports: I('<path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 12h7M9 15h7M9 18h4"/>'),
   plan: I('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/>'),
+  /* Autopilot: a clock inside a repeating arrow. The arrow turns while the schedule is on. */
+  auto: I('<g class="arr"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M18.5 2.5v3.8h-3.8"/></g><path d="M12 7.5V12l3 2"/>'),
+  matcher: I('<rect x="3" y="5" width="7" height="14" rx="1.5"/><rect x="14" y="5" width="7" height="14" rx="1.5"/><path d="M10 12h4"/>'),
+  writer: I('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>'),
 };
 
 const STAGE_TOOLS = { 1: 'Copilot in Excel', 2: 'Cowork', 3: 'Microsoft Foundry' };
@@ -72,6 +76,7 @@ const PAGES = {
   upload: { title: 'Upload your workbook', sub: 'An agent must read and check the data before it acts.', icon: 'upload', label: 'Upload workbook', short: 'Upload' },
   reports: { title: 'Public reports', sub: 'Facts from company filings, each with its page number.', icon: 'reports', label: 'Public reports', short: 'Reports' },
   workbook: { title: 'Workbook insights', sub: 'Stage 1: fast answers from the data, but nobody checks the data.', icon: 'workbook', label: 'Workbook', tag: 'Stage 1' },
+  autorun: { title: 'Account run', sub: 'Stage 3: AI runs a repeatable process for every account, on a schedule. Only exceptions reach you.', icon: 'auto', label: 'Account run', short: 'Run' },
   monitor: { title: 'Account Monitor', sub: 'Stage 3: four agents run one process, a person decides.', icon: 'monitor', label: 'Account Monitor', short: 'Monitor' },
   chat: { title: 'Insights chat', sub: 'Ask in plain words. Every answer cites its sources and is checked.', icon: 'chat', label: 'Insights chat', short: 'Chat' },
   plan: { title: 'Sales plan', sub: 'Picks up the Cowork shortlist: test each hypothesis, compare with competitors, position Microsoft.', icon: 'plan', label: 'Sales plan', short: 'Plan' },
@@ -81,8 +86,9 @@ const PAGES = {
 
 function renderNav() {
   const cur = currentPage();
-  const item = (k) => `<a href="#/${k}" title="${PAGES[k].label}" class="${cur === k ? 'active' : ''}" ${cur === k ? 'aria-current="page"' : ''}>${ICON[PAGES[k].icon]}<span class="lbl"><span class="long">${PAGES[k].label}</span><span class="short">${PAGES[k].short || PAGES[k].label}</span></span>${PAGES[k].tag ? `<span class="tag">${PAGES[k].tag}</span>` : ''}</a>`;
-  $('#nav').innerHTML = `${item('overview')}${item('upload')}${item('workbook')}${item('reports')}<div class="sep">Stage 3 · Microsoft Foundry</div>${item('monitor')}${item('chat')}${item('plan')}${item('trust')}${item('bakeoff')}`;
+  const auto = (k) => k === 'autorun' && state.auto?.schedule.enabled;
+  const item = (k) => `<a href="#/${k}" title="${PAGES[k].label}${auto(k) ? ' · autopilot on' : ''}" class="${cur === k ? 'active' : ''} ${auto(k) ? 'auto-on' : ''}" ${cur === k ? 'aria-current="page"' : ''}>${ICON[PAGES[k].icon]}<span class="lbl"><span class="long">${PAGES[k].label}</span><span class="short">${PAGES[k].short || PAGES[k].label}</span></span>${auto(k) ? '<span class="tag auto">Auto</span>' : PAGES[k].tag ? `<span class="tag">${PAGES[k].tag}</span>` : ''}</a>`;
+  $('#nav').innerHTML = `${item('overview')}${item('upload')}${item('workbook')}${item('reports')}<div class="sep">Stage 3 · Microsoft Foundry</div>${item('autorun')}${item('monitor')}${item('chat')}${item('plan')}${item('trust')}${item('bakeoff')}`;
   $('#topnav').innerHTML = Object.keys(PAGES).map(item).join('');
   $('#topnav a.active')?.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
@@ -108,6 +114,11 @@ const GUIDE = {
     what: 'Half-year reports that the companies publish themselves, read by the app. Headline figures are copied with the page they come from and checked against that page.',
     try: ['Compare growth and margin across the five companies', 'Click a page chip to open the original PDF at that page', 'Search the reports for a topic such as outlook or risks'],
     why: 'Prices say what the market did. Reports say what the business did. Every figure here can be traced to a page.',
+  },
+  autorun: {
+    what: 'The business question answered for every account in the workbook, by one repeatable process: what is happening in the industry, which of our past cases fit, and what we should offer.',
+    try: ['Press "Run now" and watch all accounts move through the four agents', 'Switch on Autopilot: the process then starts on its own, and the Auto badge shows on every page', 'Click an account for its three answers, then decide the exceptions in "Needs you"'],
+    why: 'This is Stage 3 at scale: nobody asks a question, the process runs on a schedule, handles most accounts on its own and hands a person only what needs a decision. The past cases are synthetic demo data.',
   },
   monitor: {
     what: 'Four agents work as a team: one checks the data, one finds the material changes, one writes a briefing with sources and one reviews it against policy. A person then decides.',
@@ -187,6 +198,7 @@ const DEMO_STEPS = [
   { page: 'upload', min: 2, wait: 'The animation takes about 8 seconds. Skip it if you are short on time.', title: 'Load the workbook', do: 'Click "Use the sample workbook" and let the animation run, or drop your own file.', say: 'Before an agent acts, someone has to read the data properly. Watch the columns being mapped and the quality being checked.' },
   { page: 'workbook', min: 2, title: 'Stage 1: AI helps', do: 'Show the KPIs, the sector chart and the signal comparison.', say: 'This is what Copilot in Excel gives every user: fast answers. It does not check the data or run a process.' },
   { page: 'reports', min: 2, wait: 'Search works offline with keywords and live with embeddings.', title: 'Bring in public reports', do: 'Show growth and margin, click a page chip to open the PDF, then search for a topic.', say: 'Prices show what the market did. Reports show what the business did, and every figure has its page.' },
+  { page: 'autorun', min: 3, wait: 'An offline run takes about 9 seconds for all accounts.', title: 'Stage 3: AI runs the process', do: 'Press "Run now", click UBS in the grid, then switch on Autopilot and point to the Auto badge in the menu and the top bar.', say: 'Nobody asks a question here. For every account the agents read the industry news, pick our past cases and write the offer. Most accounts go out on their own; only the exceptions come to us. And it runs on a schedule.' },
   { page: 'monitor', min: 4, wait: 'A live cycle takes about 20 seconds. Talk through the agents while it runs.', title: 'Stage 3: AI executes', do: 'Press "Run monitoring cycle", open the agent trace, then approve the briefing.', say: 'Four agents, a model chosen for each job, a policy check and a person who decides. Every step is traced.' },
   { page: 'chat', min: 2, wait: 'Each answer takes 3 to 8 seconds live.', title: 'Ask about peers', do: 'Press "Discuss this briefing in chat" under the briefing. Then click Novartis and two peers in the Peer explorer, press "Compare", and finish with the trap question "Should I buy...".', say: 'The peer selection is our own screen, built around the agent. The agent answers from tools, every number has a source, and advice is held back.' },
   { page: 'plan', min: 3, wait: 'Each answer takes 2 to 6 seconds.', title: 'Turn the shortlist into a plan', do: 'Ask "We only have 12 seller days. Where should they go?", open Competitors for UBS, then press "Build the plan" and download it.', say: 'Cowork gave us three accounts and a hypothesis for each. Here the hypotheses meet the evidence, the competitors and our Microsoft plays, and the chat drives the dashboard. Copilot cannot build this screen.' },
@@ -233,7 +245,8 @@ function renderTop() {
   $('#top-actions').innerHTML = `<div class="ta-row">
     <a class="chip file" href="#/upload" title="Change the Excel workbook">${ICON.file}<span class="nm">${esc(src?.name || 'No workbook')}</span><span class="muted">${src?.is_sample ? '· sample' : '· your file'}</span></a>
     <span class="chip snap" title="Date of the market data in the workbook">Data of ${esc(src?.snapshot || '')}</span>
-    <span class="chip ${live ? 'good' : ''}" title="${live ? esc(s.endpoint || '') : 'No Azure calls are made'}"><span class="dot ${live ? 'on' : ''}"></span>${live ? 'Foundry connected' : 'Recorded results'}</span></div>
+    <span class="chip ${live ? 'good' : ''}" title="${live ? esc(s.endpoint || '') : 'No Azure calls are made'}"><span class="dot ${live ? 'on' : ''}"></span>${live ? 'Foundry connected' : 'Recorded results'}</span>
+    <a class="chip auto-chip" id="auto-chip" href="#/autorun" hidden></a></div>
     <div class="ta-row"><div class="seg" id="mode-seg" role="group" aria-label="Run mode">
       <button data-mode="live" class="${live ? 'on' : ''} ${liveOk ? '' : 'disabled'}" aria-pressed="${live}" title="${liveOk ? 'Call real models in Microsoft Foundry' : 'Run az login and set FOUNDRY_ENDPOINT in .env'}">Live · Foundry</button>
       <button data-mode="offline" class="${live ? '' : 'on'}" aria-pressed="${!live}" title="Replay recorded results, no Azure needed">Offline replay</button>
@@ -247,6 +260,7 @@ function renderTop() {
     $('#zoom-btn').setAttribute('aria-pressed', String(on));
     setTimeout(() => { syncTopbarHeight(); window.dispatchEvent(new Event('resize')); }, 50);
   };
+  drawAutoChip();
   $('#rail-foot').innerHTML = `Data: <b>${esc(src?.name || 'none')}</b>${src?.snapshot ? ` (as of ${esc(src.snapshot)})` : ''}. Monitoring uses <b>real</b> public quotes and headlines. Not investment advice.`;
   $$('#mode-seg button').forEach((b) => (b.onclick = () => {
     if (b.classList.contains('disabled')) return;
@@ -850,6 +864,289 @@ async function monitorView(el) {
     });
   };
   return () => { stop?.(); clearInterval(timer); document.removeEventListener('modechange', syncChips); };
+}
+
+/* ------------------------------------------------------------------ autopilot status, shown on every page */
+const clock = (sec) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
+const untilText = (at) => {
+  const sec = Math.max(0, (at - Date.now()) / 1000);
+  if (sec < 3600) return `in ${clock(sec)}`;
+  return new Date(at).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+};
+function drawAutoChip() {
+  const c = $('#auto-chip'), a = state.auto;
+  if (!c) return;
+  const on = !!a?.schedule.enabled, run = a?.active;
+  c.hidden = !on && !run;
+  if (c.hidden) return;
+  c.className = `chip auto-chip ${on ? 'on' : ''}`;
+  c.title = on ? `Autopilot: ${a.schedule.cadence_label}. Click to open the Account run.` : 'A run is in progress';
+  c.innerHTML = `${ICON.auto}${run ? `<span>${run.trigger === 'schedule' ? 'Autopilot running' : 'Run in progress'} · ${run.processed}/${a.accounts}</span>` : `<span>Autopilot on · next run ${untilText(state.autoNextAt)}</span>`}`;
+}
+async function pollAuto() {
+  let a;
+  try { const r = await fetch('/api/autorun'); if (!r.ok) return; a = await r.json(); } catch { return; }
+  const prev = state.auto;
+  state.auto = a;
+  state.autoNextAt = a.schedule.seconds_to_next != null ? Date.now() + a.schedule.seconds_to_next * 1000 : null;
+  if (prev?.schedule.enabled !== a.schedule.enabled) renderNav();
+  if (a.active && a.active.id !== prev?.active?.id) {
+    if (a.active.trigger === 'schedule' && prev) toast(`Autopilot started ${a.active.id} for ${a.accounts} accounts`);
+    document.dispatchEvent(new CustomEvent('autorunstart', { detail: a.active }));
+  }
+  drawAutoChip();
+}
+
+/* ------------------------------------------------------------------ account run */
+const ROUTE_TONE = { ready: 'good', campaign: 'info', review: 'warn', parked: '' };
+const ROUTE_ICON = { ready: '→', campaign: '◎', review: '!', parked: '·' };
+const ROUTE_SHORT = { ready: 'To account team', campaign: 'Industry campaign', review: 'Needs you', parked: 'No trigger' };
+
+async function autorunView(el) {
+  await pollAuto();
+  const st = { run: null, accounts: [], results: {}, stages: {}, inds: [], filter: 'all', focus: null, decided: {}, routes: state.auto.routes };
+  let stop = null, tick = null;
+  const n = state.auto.accounts;
+  const sch = () => state.auto.schedule;
+  el.innerHTML = `
+    <div class="ar-top">
+      <div class="card ar-q rise">
+        <div class="ar-kicker">Business question</div>
+        <blockquote>“For every account on our list: what is happening in their industry, which of our past cases fit, and what should we offer?”</blockquote>
+        <div class="ar-steps"><span>${ICON.scout}Industry news</span><i>›</i><span>${ICON.matcher}Past cases</span><i>›</i><span>${ICON.writer}Offer</span><i>›</i><span>${ICON.reviewer}Review</span><i>›</i><span>${ICON.human}Only exceptions to you</span></div>
+        <div class="row" style="gap:12px;flex-wrap:wrap;margin-top:16px"><button class="btn" id="ar-run">${ICON.play}Run now for all ${n} accounts</button>
+          <span class="muted" style="font-size:12.5px">${state.auto.cases} past cases · ${esc(state.auto.case_source)}</span></div>
+      </div>
+      <div class="card ar-auto rise" id="ar-auto">
+        <div class="ar-auto-ic" aria-hidden="true">${ICON.auto}</div>
+        <div class="ar-auto-b">
+          <div class="row spread"><div><b class="ar-auto-t">Autopilot</b><div class="ar-auto-state" id="ar-auto-state"></div></div>
+            <button class="switch" id="ar-sw" role="switch" aria-checked="false" aria-label="Autopilot: run on a schedule"><i></i></button></div>
+          <label class="muted" for="ar-cad" style="font-size:12px;display:block;margin:12px 0 6px">Schedule</label>
+          <select id="ar-cad" style="width:100%">${Object.entries(state.auto.cadences).map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join('')}</select>
+          <div class="ar-next" id="ar-next"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card mt" style="padding:14px"><div class="sec-h" style="margin:2px 4px 10px">Agent team · the same process for every account</div>
+      <div class="pipeline" id="ar-agents">${state.auto.agents.map((a) => `<div class="agent" id="ara-${a.key}"><div class="ic">${ICON[a.key]}</div><div><b>${esc(a.name)}</b><small>${esc(a.role)}</small><div class="meta"><span class="chip mono" data-model="${esc(a.model)}">${esc(state.mode === 'live' ? a.model : 'rules')}</span></div><div class="state"></div></div></div>`).join('')}
+        <div class="agent" id="ara-human"><div class="ic">${ICON.human}</div><div><b>You</b><small>Decide only the exceptions</small><div class="meta"><span class="chip">human</span></div><div class="state" id="ara-human-st">waiting</div></div></div></div></div>
+    <div class="ar-kpis mt" id="ar-kpis"></div>
+    <div class="sec mt"><div class="sec-h"><i>1</i>What is happening in each industry <span class="chip" style="text-transform:none;letter-spacing:0">${gl('feed', 'real public feed')}</span></div><div class="ar-ind" id="ar-ind"></div></div>
+    <div class="ar-body">
+      <div class="sec"><div class="sec-h" style="flex-wrap:wrap"><i>2</i>Every account <span class="seg" id="ar-filter" role="group" aria-label="Filter accounts" style="margin-left:auto;text-transform:none;letter-spacing:0"></span></div><div class="ar-grid" id="ar-grid"></div></div>
+      <div class="sec"><div class="sec-h"><i>3</i>The answer for one account</div><div class="card ar-detail" id="ar-detail"></div></div>
+    </div>
+    <div class="grid g2 mt"><div class="card" id="ar-inbox"></div><div class="card" id="ar-hist"></div></div>`;
+
+  /* ----------------------------------------------------------- autopilot card */
+  function drawAuto() {
+    const s = sch(), on = s.enabled;
+    $('#ar-auto').classList.toggle('on', on);
+    $('#ar-sw').setAttribute('aria-checked', String(on));
+    $('#ar-sw').classList.toggle('on', on);
+    $('#ar-cad').value = s.cadence;
+    $('#ar-auto-state').innerHTML = on ? `<span class="dot on"></span> On · ${esc(s.cadence_label.toLowerCase())}` : 'Off · runs only when you press Run now';
+    drawNext();
+  }
+  function drawNext() {
+    const s = sch(), a = state.auto.active;
+    $('#ar-next').innerHTML = a ? `<span><span class="spin"></span>${a.trigger === 'schedule' ? 'Autopilot is running' : 'Run in progress'} · ${a.processed}/${n} accounts</span>`
+      : s.enabled ? `<span>Next run <b>${untilText(state.autoNextAt)}</b> · ${s.mode === 'live' ? 'Live · Foundry' : 'Offline replay'}</span><small>Runs on the server, also when this page is closed.</small>`
+        : `<small>Switch on to let the process start by itself. Nobody has to press a button or ask a question.</small>`;
+    drawAutoChip();
+  }
+  const saveSchedule = async (enabled) => {
+    busy(1);
+    try {
+      const r = await fetch('/api/autorun/schedule', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled, cadence: $('#ar-cad').value, mode: state.mode }) });
+      const s = await r.json();
+      state.auto.schedule = s;
+      state.autoNextAt = s.seconds_to_next != null ? Date.now() + s.seconds_to_next * 1000 : null;
+      renderNav(); drawAuto();
+      toast(enabled ? `Autopilot on: ${s.cadence_label.toLowerCase()}` : 'Autopilot off');
+    } catch { toast('Could not change the schedule'); } finally { busy(-1); }
+  };
+  $('#ar-sw').onclick = () => saveSchedule(!sch().enabled);
+  $('#ar-cad').onchange = () => { if (sch().enabled) saveSchedule(true); };
+
+  /* ----------------------------------------------------------- one run on screen */
+  const setAgent = (key, cls, html) => {
+    const a = $('#ara-' + key);
+    if (!a) return;
+    a.classList.remove('running', 'done');
+    if (cls) a.classList.add(cls);
+    $('.state', a).innerHTML = html || '';
+  };
+  const counts = () => Object.fromEntries(Object.keys(st.routes).map((k) => [k, Object.values(st.results).filter((r) => r.route === k).length]));
+  function drawKpis() {
+    const c = counts(), done = Object.keys(st.results).length, total = st.accounts.length || n;
+    const tile = (k, v, label, hint) => `<div class="card kpi ar-kpi k-${k}" ${k !== 'all' ? `data-f="${k}" role="button" tabindex="0" title="Show only these accounts"` : ''}><div class="label">${label}</div><div class="value">${v}</div><div class="hint">${hint}</div></div>`;
+    $('#ar-kpis').innerHTML = `<div class="card kpi ar-kpi all"><div class="label">Accounts processed</div><div class="value">${done}<small>/${total}</small></div><div class="pline ${st.run && !st.run.done ? 'run' : ''}"><i style="width:${total ? (done / total) * 100 : 0}%"></i></div></div>
+      ${tile('ready', c.ready, 'Sent to account team', 'own evidence and a fitting case')}
+      ${tile('campaign', c.campaign, 'Added to industry campaign', 'industry signal only')}
+      ${tile('review', c.review, 'Needs you', 'the reviewer stopped them')}
+      ${tile('parked', c.parked, 'No trigger yet', 'checked again next run')}`;
+    $$('#ar-kpis [data-f]').forEach((t) => (t.onclick = () => { st.filter = st.filter === t.dataset.f ? 'all' : t.dataset.f; drawFilter(); drawGrid(); }));
+  }
+  function drawFilter() {
+    const c = counts();
+    $('#ar-filter').innerHTML = [['all', 'All'], ...Object.entries(st.routes).map(([k, r]) => [k, r.label])].map(([k, l]) => `<button data-f="${k}" class="${st.filter === k ? 'on' : ''}" aria-pressed="${st.filter === k}">${esc(l)}${k !== 'all' ? ` <b>${c[k]}</b>` : ''}</button>`).join('');
+    $$('#ar-filter button').forEach((b) => (b.onclick = () => { st.filter = b.dataset.f; drawFilter(); drawGrid(); }));
+  }
+  const tileHtml = (a) => {
+    const r = st.results[a.ticker], stg = st.stages[a.ticker] ?? -1;
+    const dots = state.auto.agents.map((ag, i) => `<i class="${r || i < stg ? 'on' : i === stg ? 'cur' : ''}" title="${esc(ag.name)}"></i>`).join('');
+    return `<button type="button" class="ar-tile ${r ? 'done r-' + r.route : stg >= 0 ? 'work' : ''} ${st.focus === a.ticker ? 'focus' : ''}" data-t="${esc(a.ticker)}" ${st.filter !== 'all' && (!r || r.route !== st.filter) ? 'hidden' : ''}>
+      <span class="ar-tile-top">${logo(a.ticker, a.company, 'sm')}<b>${esc(a.short)}</b><span class="tk">${esc(a.ticker)}</span></span>
+      <span class="ar-dots">${dots}</span>
+      <span class="ar-route">${r ? `<span class="chip ${ROUTE_TONE[r.route]}" title="${esc(r.route_label)}">${ROUTE_ICON[r.route]} ${ROUTE_SHORT[r.route]}</span>` : stg >= 0 ? `<span class="muted"><span class="spin"></span> ${esc(state.auto.agents[stg]?.name || '')}</span>` : '<span class="muted">queued</span>'}</span></button>`;
+  };
+  function drawGrid() {
+    if (!st.accounts.length) {
+      $('#ar-grid').innerHTML = `<div class="card empty"><div class="big">${ICON.auto}</div><h3>No run yet</h3><p>Press "Run now", or switch on Autopilot and let the process start by itself.</p></div>`;
+      return;
+    }
+    $('#ar-grid').innerHTML = st.accounts.map(tileHtml).join('');
+    $$('#ar-grid .ar-tile').forEach((b) => (b.onclick = () => { st.focus = b.dataset.t; drawGrid(); drawDetail(); }));
+  }
+  const drawTile = (t) => {
+    const old = $(`#ar-grid .ar-tile[data-t="${t}"]`), a = st.accounts.find((x) => x.ticker === t);
+    if (!old || !a) return;
+    const tmp = document.createElement('div');
+    tmp.innerHTML = tileHtml(a).trim();
+    const nu = tmp.firstElementChild;
+    nu.onclick = () => { st.focus = t; drawGrid(); drawDetail(); };
+    old.replaceWith(nu);
+  };
+  function drawInd() {
+    $('#ar-ind').innerHTML = st.inds.length ? st.inds.map((i) => `<div class="card ar-ind-c ${i.top_theme ? '' : 'quiet'} rise"><div class="row spread"><b>${esc(i.sector)}</b><span class="muted" style="font-size:11.5px">${i.companies} accounts</span></div>
+      <div class="chip-line">${i.themes.length ? i.themes.slice(0, 3).map((t, k) => `<span class="chip ${k ? '' : 'accent'}">${esc(t.label)} · ${t.count}</span>`).join('') : '<span class="chip">quiet</span>'}</div>
+      <p>${esc(i.summary)}</p></div>`).join('') : `<div class="muted" style="font-size:13px">The Industry Scout reads the news for each industry when a run starts.</div>`;
+  }
+  function drawDetail() {
+    const d = $('#ar-detail'), r = st.results[st.focus];
+    if (!r) { d.innerHTML = `<div class="muted" style="padding:24px 4px;text-align:center">${st.accounts.length ? 'Click an account to see its three answers and the review.' : 'Results appear here after the first run.'}</div>`; return; }
+    const chip = (id) => (id ? srcChip(id, r.sources[id]) : '');
+    const passed = r.checks.filter((c) => c.passed).length;
+    d.innerHTML = `<div class="row" style="gap:12px">${logo(r.ticker, r.company)}<div style="min-width:0"><h3>${esc(r.company)}</h3><div class="muted" style="font-size:12px">${esc(r.sector)} · ${esc(r.ticker)} ${chip(r.ref)}</div></div>
+        <span class="chip ${ROUTE_TONE[r.route]}" style="margin-left:auto">${ROUTE_ICON[r.route]} ${esc(r.route_label)}</span></div>
+      <div class="ar-ans"><span class="n">1</span><div><h5>What is happening in the industry</h5><p>${esc(r.industry.summary)}</p>
+        ${r.own_themes.length ? `<p class="muted" style="font-size:12px">Own news for ${esc(r.short)}: ${r.own_themes.map((t) => esc(t)).join(', ')}</p>` : ''}</div></div>
+      <div class="ar-ans"><span class="n">2</span><div><h5>Which of our past cases fit</h5>${r.cases.length ? r.cases.map((c, i) => `<div class="ar-case ${i ? 'alt' : ''}"><div class="row spread"><b>${esc(c.title)}</b><span class="chip ${c.fit.startsWith('Same industry') ? 'good' : ''}">${esc(c.fit)}</span></div>
+          <small>${esc(c.id)} · ${esc(c.client)} · ${c.year} · <em>synthetic</em></small><p>${esc(c.outcome)}</p></div>`).join('') : '<p class="muted">No past case for this need.</p>'}</div></div>
+      <div class="ar-ans"><span class="n">3</span><div><h5>What we should offer</h5>${r.offer ? `<b>${esc(r.offer.name)}</b> <span class="chip">${esc(r.offer.theme_label)}</span>
+          <p>${esc(r.offer.pitch)}</p><div class="chip-line">${r.offer.products.map((p) => `<span class="chip accent">${esc(p)}</span>`).join('')}</div>
+          ${r.why ? `<div class="ar-why"><span class="muted">${r.basis === 'account' ? 'Why now' : r.basis === 'industry' ? 'Why now (industry signal)' : 'Why'}</span> ${esc(r.why.text)} ${chip(r.why.id)}</div>` : ''}
+          <p class="muted" style="font-size:12px;margin-bottom:0">Meet: ${esc(r.offer.meeting)} · confidence ${esc(r.confidence)}</p>` : '<p class="muted">No offer: nothing in the news calls for one. The next run checks again.</p>'}</div></div>
+      ${disc(`Compliance review · ${passed}/${r.checks.length} checks passed${r.reasons.length ? ` · <span style="color:var(--warn)">${r.reasons.length} reason${r.reasons.length > 1 ? 's' : ''} for a person</span>` : ''}`,
+        `<div class="checks">${r.checks.map((c) => `<div class="check ${c.passed ? 'ok' : 'no'}"><div class="ck">${c.passed ? '✓' : '✕'}</div><div>${esc(c.label)}<small>${esc(c.detail)}</small></div></div>`).join('')}</div>
+         ${r.reasons.length ? `<ul class="plain" style="margin-top:10px">${r.reasons.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}`, { cls: 'flat', open: r.route === 'review' })}`;
+  }
+  function drawInbox() {
+    const items = Object.values(st.results).filter((r) => r.route === 'review');
+    const open = items.filter((r) => !st.decided[r.ticker]);
+    setAgent('human', open.length ? 'running' : items.length ? 'done' : '', open.length ? `${open.length} waiting for you` : items.length ? 'all decided' : st.run?.done ? 'nothing to decide' : 'waiting');
+    $('#ar-inbox').innerHTML = `<div class="row spread"><h3>${ICON.human.replace('<svg', '<svg width="16" height="16" style="vertical-align:-3px;margin-right:6px"')}Needs you <span class="chip warn">${open.length}</span></h3><span class="muted" style="font-size:12px">${items.length - open.length} decided</span></div>
+      <div class="sub">The only accounts the process did not finish on its own.</div>
+      ${items.length ? items.map((r) => { const dcs = st.decided[r.ticker]; return `<div class="ar-inb ${dcs ? 'decided' : ''}">
+        <button type="button" class="ar-inb-n" data-t="${esc(r.ticker)}">${logo(r.ticker, r.company, 'sm')}<b>${esc(r.short)}</b></button>
+        <div class="ar-inb-r">${r.reasons.map((x) => esc(x)).join('<br>')}${r.offer ? `<small>Offer: ${esc(r.offer.name)}</small>` : ''}</div>
+        <div class="ar-inb-a">${dcs ? `<span class="chip ${dcs === 'approved' ? 'good' : ''}">${dcs === 'approved' ? 'Approved' : 'Sent back'}</span>` : `<button class="btn good sm" data-d="approved" data-t="${esc(r.ticker)}">Approve</button><button class="btn ghost sm" data-d="changes_requested" data-t="${esc(r.ticker)}">Send back</button>`}</div></div>`; }).join('')
+        : `<div class="muted" style="font-size:13px;padding:12px 0">${st.run?.done ? 'Nothing needs a person in this run.' : 'Exceptions appear here while the run goes.'}</div>`}`;
+    $$('#ar-inbox .ar-inb-n').forEach((b) => (b.onclick = () => { st.focus = b.dataset.t; drawGrid(); drawDetail(); $('#ar-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }));
+    $$('#ar-inbox button[data-d]').forEach((b) => (b.onclick = async () => {
+      const r = st.results[b.dataset.t];
+      $$(`#ar-inbox button[data-t="${b.dataset.t}"][data-d]`).forEach((x) => (x.disabled = true));
+      try {
+        await fetch('/api/approvals', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ briefing_id: `${st.run.id}-${r.ticker}`, decision: b.dataset.d, company: r.company, owner_team: r.offer?.meeting || 'Account team' }) });
+        st.decided[r.ticker] = b.dataset.d;
+      } catch { toast('Could not save the decision'); }
+      drawInbox();
+    }));
+  }
+  function drawHist() {
+    const runs = state.auto.runs;
+    $('#ar-hist').innerHTML = `<h3>Run history</h3><div class="sub">Every run is logged, whoever started it. Click one to open it.</div>
+      ${runs.length ? `<div class="ar-hist">${runs.map((r) => `<button type="button" class="ar-h ${st.run?.id === r.id ? 'on' : ''}" data-id="${esc(r.id)}">
+        <span class="ar-h-ic ${r.trigger}" title="${r.trigger === 'schedule' ? 'Started by the schedule' : 'Started by hand'}">${r.trigger === 'schedule' ? ICON.auto : ICON.human}</span>
+        <span><b>${esc(r.id)}</b><small>${new Date(r.started).toLocaleTimeString('en-GB')} · ${r.trigger === 'schedule' ? 'Autopilot' : 'started by you'} · ${r.mode === 'live' ? 'live' : 'offline'}</small></span>
+        <span class="ar-h-c">${r.done && r.counts ? `${r.counts.ready + r.counts.campaign} on their own · ${r.counts.review} for you · ${r.elapsed}s` : `<span class="spin"></span> ${r.processed}/${n}`}</span></button>`).join('')}</div>`
+        : '<div class="muted" style="font-size:13px">No run yet.</div>'}`;
+    $$('#ar-hist .ar-h').forEach((b) => (b.onclick = () => { if (b.dataset.id !== st.run?.id) show(b.dataset.id); }));
+  }
+
+  function handle(e) {
+    switch (e.type) {
+      case 'run_start':
+        st.accounts = e.accounts; st.routes = e.routes;
+        state.auto.agents.forEach((a) => { const c = $(`#ara-${a.key} .meta .chip`); if (c) c.textContent = e.mode === 'live' ? a.model : 'rules'; });
+        if (e.note) toast(e.note);
+        drawGrid(); drawKpis(); drawFilter();
+        break;
+      case 'agent_start': setAgent(e.agent, 'running', `<span class="spin"></span>${esc(e.task)}`); break;
+      case 'industry':
+        st.inds.push(e); drawInd();
+        break;
+      case 'warning': toast(e.message); break;
+      case 'acc_stage': {
+        const i = state.auto.agents.findIndex((a) => a.key === e.stage);
+        st.stages[e.ticker] = i;
+        if (i === 0) setAgent('scout', 'done', `${ICON.check.replace('<svg', '<svg width="13" height="13"')} ${st.inds.length} industries read`);
+        state.auto.agents.slice(1).forEach((a, k) => { if (k + 1 <= i) setAgent(a.key, 'running', `<span class="spin"></span>working on several accounts`); });
+        drawTile(e.ticker);
+        break;
+      }
+      case 'acc_done':
+        st.results[e.result.ticker] = e.result;
+        if (!st.focus && e.result.route === 'review') st.focus = e.result.ticker;
+        drawTile(e.result.ticker); drawKpis(); drawFilter();
+        if (e.result.route === 'review') drawInbox();
+        if (st.focus === e.result.ticker) drawDetail();
+        break;
+      case 'agent_done': setAgent(e.agent, 'done', `${ICON.check.replace('<svg', '<svg width="13" height="13"')} ${esc(e.summary)}`); break;
+      case 'run_done':
+        st.run.done = true;
+        drawKpis(); drawInbox(); drawGrid(); drawDetail();
+        break;
+      case 'error': toast(e.message); break;
+    }
+  }
+
+  function show(runId) {
+    stop?.();
+    Object.assign(st, { run: { id: runId, done: false }, accounts: [], results: {}, stages: {}, inds: [], focus: null, decided: {} });
+    state.auto.agents.forEach((a) => setAgent(a.key, '', ''));
+    drawGrid(); drawInd(); drawKpis(); drawFilter(); drawDetail(); drawInbox(); drawHist();
+    stop = stream(`/api/autorun/stream?run=${encodeURIComponent(runId)}`, handle, async () => {
+      stop = null;
+      await pollAuto(); drawHist(); drawNext(); runBtn();
+    });
+  }
+  const runBtn = () => {
+    const busyRun = !!state.auto.active;
+    $('#ar-run').classList.toggle('busy', busyRun);
+    $('#ar-run').innerHTML = busyRun ? `<span class="spin"></span>Running…` : `${ICON.play}Run now for all ${n} accounts`;
+  };
+  $('#ar-run').onclick = async () => {
+    if (state.auto.active) return;
+    busy(1);
+    try {
+      const r = await fetch('/api/autorun/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: state.mode }) }).then((x) => x.json());
+      await pollAuto();
+      runBtn(); show(r.run.id);
+    } catch { toast('Could not start the run'); } finally { busy(-1); }
+  };
+  const onStart = (ev) => { if (ev.detail.id !== st.run?.id) show(ev.detail.id); runBtn(); };
+  document.addEventListener('autorunstart', onStart);
+  const syncChips = () => state.auto.agents.forEach((a) => { const c = $(`#ara-${a.key} .meta .chip`); if (c && !st.run) c.textContent = state.mode === 'live' ? a.model : 'rules'; });
+  document.addEventListener('modechange', syncChips);
+  tick = setInterval(() => { drawNext(); if (!stop) drawHist(); runBtn(); }, 1000);
+
+  drawAuto(); runBtn(); drawInd(); drawKpis(); drawFilter(); drawGrid(); drawDetail(); drawInbox(); drawHist();
+  const first = state.auto.active || state.auto.runs[0];
+  if (first) show(first.id);
+  return () => { stop?.(); clearInterval(tick); document.removeEventListener('autorunstart', onStart); document.removeEventListener('modechange', syncChips); };
 }
 
 /* ------------------------------------------------------------------ trust lab */
@@ -1975,7 +2272,7 @@ async function uploadView(el) {
 }
 
 /* ------------------------------------------------------------------ boot */
-const VIEWS = { overview, upload: uploadView, workbook: workbookView, reports: reportsView, monitor: monitorView, chat: chatView, plan: planView, trust: trustView, bakeoff: bakeView };
+const VIEWS = { overview, upload: uploadView, autorun: autorunView, workbook: workbookView, reports: reportsView, monitor: monitorView, chat: chatView, plan: planView, trust: trustView, bakeoff: bakeView };
 
 (async function boot() {
   $('#logo').innerHTML = ICON.logo;
@@ -1999,6 +2296,10 @@ const VIEWS = { overview, upload: uploadView, workbook: workbookView, reports: r
   await loadLogos();
   if (!state.mode || (state.mode === 'live' && !state.status.live_available)) state.mode = state.status.live_available ? 'live' : 'offline';
   renderTop();
+  await pollAuto();
+  renderNav();
+  setInterval(pollAuto, 3000);
+  setInterval(drawAutoChip, 1000);
   route();
 })();
 
